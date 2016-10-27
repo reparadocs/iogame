@@ -1,6 +1,11 @@
 var util = require("util")
-var io = require("socket.io")(process.env.PORT || 3000);
+var io = require("socket.io")(3000);
 var Player = require("./Player").Player;
+var app = require('express').createServer();
+
+app.get('/', function(req, res) {
+  res.sendfile(__dirname + '/public/index.html');
+});
 
 var socket, players;
 
