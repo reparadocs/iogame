@@ -1,5 +1,5 @@
 var util = require("util")
-var io = require("socket.io")(8000);
+var io = require("socket.io")(3000);
 var Player = require("./Player").Player;
 
 var socket, players;
