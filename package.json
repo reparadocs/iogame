@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "socket.io": "^1.5.1"
+  }, 
+  "engines": {
+    "node": "^7.0.0"
   }
 }
