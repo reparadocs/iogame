@@ -1,5 +1,5 @@
 var util = require("util")
-var io = require("socket.io")(8000);
+var io = require("socket.io")(443);
 var Player = require("./Player").Player;
 var express = require('express');
 var app = express();
