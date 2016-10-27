@@ -1,10 +1,12 @@
 var util = require("util")
-var io = require("socket.io")(443);
 var Player = require("./Player").Player;
 var express = require('express');
 var app = express();
+var server = require('http').Server(app);
+var io = require("socket.io")(server);
 
-app.listen(process.env.PORT || 3000);
+
+server.listen(process.env.PORT || 3000);
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {

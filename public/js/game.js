@@ -33,9 +33,9 @@ function init() {
 	// Initialise the local player
 	localPlayer = new Player(startX, startY);
 	if (location.hostname === "localhost") {
-		socket = io.connect("http://localhost:443");
+		socket = io.connect("http://localhost:3000");
 	} else {
-		socket = io.connect("https://testiogame.herokuapp.com:443")
+		socket = io.connect("https://testiogame.herokuapp.com")
 	}
 	remotePlayers = [];
 	// Start listening for events
