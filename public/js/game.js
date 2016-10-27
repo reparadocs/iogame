@@ -32,7 +32,7 @@ function init() {
 
 	// Initialise the local player
 	localPlayer = new Player(startX, startY);
-	socket = io.connect('http://localhost:3000');
+	socket = io.connect('http://localhost:8000');
 	remotePlayers = [];
 	// Start listening for events
 	setEventHandlers();
