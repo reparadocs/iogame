@@ -3,6 +3,8 @@ var io = require("socket.io")(3000);
 var Player = require("./Player").Player;
 var app = require('express')();
 
+app.listen(process.env.PORT || 3000);
+
 app.get('/', function(req, res) {
   res.sendfile(__dirname + '/public/index.html');
 });
