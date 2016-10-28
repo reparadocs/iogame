@@ -6,8 +6,8 @@ var canvas,			// Canvas DOM element
 	keys,			// Keyboard input
 	localPlayer, // Local player
 	remotePlayers,
-	socket;	
-
+	bullets,
+	socket;
 
 /**************************************************
 ** GAME INITIALISATION
@@ -16,7 +16,7 @@ function init() {
 	// Declare the canvas and rendering context
 	canvas = document.getElementById("gameCanvas");
 	ctx = canvas.getContext("2d");
-
+	
 	// Maximise the canvas
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
@@ -27,8 +27,8 @@ function init() {
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
-	var startX = Math.round(Math.random()*(canvas.width-5)),
-		startY = Math.round(Math.random()*(canvas.height-5));
+	var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
+		startY = Math.round(Math.random()*(Constants.gameHeight-5));
 
 	// Initialise the local player
 	localPlayer = new Player(startX, startY);
@@ -38,6 +38,7 @@ function init() {
 		socket = io.connect("https://testiogame.herokuapp.com")
 	}
 	remotePlayers = [];
+	bullets = [];
 	// Start listening for events
 	setEventHandlers();
 
@@ -60,6 +61,7 @@ var setEventHandlers = function() {
 	socket.on("new player", onNewPlayer);
 	socket.on("move player", onMovePlayer);	
 	socket.on("remove player", onRemovePlayer);
+	socket.on("player shoots", onShoot);
 };
 
 // Keyboard key down
@@ -93,10 +95,10 @@ function onSocketDisconnect() {
 };
 
 function onNewPlayer(data) {
-    console.log("New player connected: "+data.id);
-    var newPlayer = new Player(data.x, data.y);
-    newPlayer.id = data.id;
-    remotePlayers.push(newPlayer);
+  console.log("New player connected: "+data.id);
+  var newPlayer = new Player(data.x, data.y);
+  newPlayer.id = data.id;
+  remotePlayers.push(newPlayer);
 };
 
 function onMovePlayer(data) {
@@ -109,6 +111,7 @@ function onMovePlayer(data) {
 
 	movePlayer.setX(data.x);
 	movePlayer.setY(data.y);
+	movePlayer.setDir(data.dir);
 };
 
 function onRemovePlayer(data) {
@@ -122,6 +125,11 @@ function onRemovePlayer(data) {
 
   remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 };
+
+function onShoot(data) {
+	var newBullet = new Bullet(data.x, data.y, data.dir);
+	bullets.push(newBullet);
+}
 
 function playerById(id) {
   var i;
@@ -149,9 +157,14 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	if (localPlayer.update(keys)) {
-    socket.emit("move player", {x: localPlayer.getX(), y: localPlayer.getY()});
+	state = localPlayer.update(keys);
+	if (state !== null) {
+    socket.emit(state.command, state);
 	};
+
+	for (var i = 0; i < bullets.length; i++) {
+		bullets[i].update();
+	}
 };
 
 
@@ -167,6 +180,15 @@ function draw() {
 
 	var i;
 	for (i = 0; i < remotePlayers.length; i++) {
-	    remotePlayers[i].draw(ctx);
+	  remotePlayers[i].draw(ctx);
 	};
+
+	for (i = 0; i < bullets.length; i++) { 
+		bullets[i].draw(ctx);
+	}
+
+	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
+	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
+	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
+	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
 };

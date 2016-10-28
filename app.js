@@ -1,5 +1,6 @@
 var util = require("util")
-var Player = require("./Player").Player;
+var Player = require("./public/js/Player").Player;
+var Bullet = require("./public/js/Bullet").Bullet;
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
@@ -13,10 +14,11 @@ app.get('/', function(req, res) {
   res.sendfile(__dirname + '/public/index.html');
 });
 
-var socket, players;
+var socket, players, bullets;
 
 function init() {
   players = [];
+  bullets = [];
   setEventHandlers();
 };
 
@@ -29,6 +31,7 @@ function onSocketConnection(client) {
   client.on("disconnect", onClientDisconnect);
   client.on("new player", onNewPlayer);
   client.on("move player", onMovePlayer);
+  client.on("player shoots", onShoot);
 };
 
 function onClientDisconnect() {
@@ -47,11 +50,11 @@ function onClientDisconnect() {
 function onNewPlayer(data) {
   var newPlayer = new Player(data.x, data.y);
   newPlayer.id = this.id;
-  this.broadcast.emit("new player", {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY()});
+  this.broadcast.emit("new player", {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), dir: newPlayer.getDir()});
   var i, existingPlayer;
   for (i = 0; i < players.length; i++) {
     existingPlayer = players[i];
-    this.emit("new player", {id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY()});
+    this.emit("new player", {id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), dir: existingPlayer.getDir()});
   };
   players.push(newPlayer);
 };  
@@ -66,9 +69,16 @@ function onMovePlayer(data) {
 
   movePlayer.setX(data.x);
   movePlayer.setY(data.y);
+  movePlayer.setDir(data.dir)
 
-  this.broadcast.emit("move player", {id: movePlayer.id, x: movePlayer.getX(), y: movePlayer.getY()});
+  this.broadcast.emit("move player", {id: movePlayer.id, x: movePlayer.getX(), y: movePlayer.getY(), dir: movePlayer.getDir()});
 };
+
+function onShoot(data) {
+  var newBullet = new Bullet(data.x, data.y, data.dir);
+  bullets.push(newBullet);
+  io.sockets.emit("player shoots", {x: newBullet.getX(), y: newBullet.getY(), dir: newBullet.getDir()});
+}
 
 function playerById(id) {
   var i;
