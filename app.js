@@ -16,7 +16,7 @@ app.get('/', function(req, res) {
   res.sendfile(__dirname + '/public/index.html');
 });
 
-var socket, players, bullets;
+var socket, players: Array<Object>, bullets: Array<Object>;
 
 function init() {
   players = [];
@@ -26,7 +26,6 @@ function init() {
   for (var i = 0; i < Constants.numResources; i++) {
     var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
     startY = Math.round(Math.random()*(Constants.gameHeight-5));
-    util.log(startX);
     var newResource = Resource(startX, startY);
     resources.push(newResource);
   }
@@ -70,11 +69,10 @@ function onNewPlayer(data) {
   };
   for (i = 0; i < resources.length; i++) {
     existingResource = resources[i];
-    util.log({x: existingResource.getX(), y: existingResource.getY()});
     this.emit("resource spawned", {x: existingResource.getX(), y: existingResource.getY()});
   }
   players.push(newPlayer);
-};  
+};
 
 function onMovePlayer(data) {
   var movePlayer = playerById(this.id);
@@ -108,7 +106,3 @@ function playerById(id) {
 };
 
 init();
-
-
-
-
