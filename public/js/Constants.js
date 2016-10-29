@@ -8,5 +8,6 @@ var Constants = {
   playerSize: 10,
 
   bulletSize: 2,
-  bulletSpeed: 5
+  bulletSpeed: 5,
+  bulletDelay: 200,
 };

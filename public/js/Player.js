@@ -4,7 +4,8 @@
 var Player = function(startX, startY) {
 	var x = startX,
 		y = startY,
-		dir = [1,0],
+		dir = [1,0], 
+		lastShot = 0,
 		id;
 
 	var setX = function(newX) {
@@ -56,7 +57,8 @@ var Player = function(startX, startY) {
 			return {command: "move player", x: x, y: y, dir: dir};
 		} 
 
-		if (keys.space) {
+		if (keys.space && (Date.now() - lastShot > Constants.bulletDelay)) {
+			lastShot = Date.now();
 			return {command: "player shoots", x: x, y: y, dir: dir};
 		}
 
