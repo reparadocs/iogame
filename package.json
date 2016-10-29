@@ -1,8 +1,12 @@
 {
   "scripts": {
-    "start": "node app.js"
+    "prestart": "babel ./src --out-dir=./build/src && babel ./public/js --out-dir=./build/public/js && browserify ./build/public/js/game.js -o ./build/public/bundle.js",
+    "start": "node build/src/app.js"
   },
   "dependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-plugin-transform-flow-strip-types": "^6.18.0",
+    "browserify": "^13.1.1",
     "express": "^4.14.0",
     "flow-bin": "^0.34.0",
     "socket.io": "^1.5.1"

@@ -1,58 +1,53 @@
-//@flow
+
 /**************************************************
 ** GAME Bullet CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
 
-var Bullet = function(
-  startX: number,
-  startY: number,
-  startDir: Array<number>,
-  size: number,
-) {
+var Bullet = function (startX, startY, startDir, size) {
   var x = startX,
-    y = startY,
-    dir = startDir,
-    size = size,
-    id: String;
+      y = startY,
+      dir = startDir,
+      size = size,
+      id;
 
-  var setX = function(newX: number) {
+  var setX = function (newX) {
     x = newX;
   };
 
-  var setY = function(newY: number) {
+  var setY = function (newY) {
     y = newY;
   };
 
-  var setDir = function(newDir: Array<number>) {
+  var setDir = function (newDir) {
     dir = newDir;
   };
 
-  var getX = function() {
+  var getX = function () {
     return x;
   };
 
-  var getY = function() {
+  var getY = function () {
     return y;
   };
 
-  var getDir = function() {
+  var getDir = function () {
     return dir;
   };
 
-  var getSize = function() {
+  var getSize = function () {
     return size;
   };
 
-  var update = function() {
+  var update = function () {
     x += dir[0] * Constants.bulletSpeed;
     y += dir[1] * Constants.bulletSpeed;
   };
 
-  var draw = function(ctx: Object) {
+  var draw = function (ctx) {
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(x, y, size, 0, 2*Math.PI);
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
     ctx.fill();
   };
 
@@ -66,7 +61,7 @@ var Bullet = function(
     getY: getY,
     getDir: getDir,
     getSize: getSize
-  }
+  };
 };
 
 exports.Bullet = Bullet;

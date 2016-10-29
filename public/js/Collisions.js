@@ -1,8 +1,9 @@
+//@flow
 /**************************************************
 ** Collisions Class
 **************************************************/
 var Collisions = function() {
-  var hasCollided = function(obj1, obj2, obj2XSize, obj2YSize) {
+  var hasCollided = function(obj1: Object, obj2: Object, obj2XSize: number, obj2YSize: number) {
     if (inBounds(obj1, obj2, obj2XSize, obj2YSize)) {
       return true;
     }
@@ -24,8 +25,4 @@ var Collisions = function() {
   }
 };
 
-(function(exports){
-
-  exports.Collisions = Collisions;
-
-}(typeof exports === 'undefined' ? this.share = {} : exports));
+exports.Collisions = Collisions;

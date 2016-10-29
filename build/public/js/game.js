@@ -9,14 +9,11 @@ var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 /**************************************************
 ** GAME VARIABLES
 **************************************************/
-var canvas,			// Canvas DOM element
-	ctx: Object,			// Canvas rendering context
-	keys: Object,			// Keyboard input
-	localPlayer: Object, // Local player
-	remotePlayers: Array<Object>,
-	bullets: Array<Object>,
-	resources: Array<Object>,
-	socket: Object;
+var canvas, // Canvas DOM element
+ctx, // Canvas rendering context
+keys, // Keyboard input
+localPlayer, // Local player
+remotePlayers, bullets, resources, socket;
 
 /**************************************************
 ** GAME INITIALISATION
@@ -36,15 +33,15 @@ function init() {
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
-	var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
-		startY = Math.round(Math.random()*(Constants.gameHeight-5));
+	var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
+	    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
 
 	// Initialise the local player
-	localPlayer = new Player(startX, startY, '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6));
+	localPlayer = new Player(startX, startY, '#' + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6));
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
 	} else {
-		socket = io.connect("https://testiogame.herokuapp.com")
+		socket = io.connect("https://testiogame.herokuapp.com");
 	}
 	remotePlayers = [];
 	bullets = [];
@@ -52,15 +49,12 @@ function init() {
 	resources = [];
 	// Start listening for events
 	setEventHandlers();
-
-
 };
-
 
 /**************************************************
 ** GAME EVENT HANDLERS
 **************************************************/
-var setEventHandlers = function() {
+var setEventHandlers = function () {
 	// Keyboard
 	window.addEventListener("keydown", onKeydown, false);
 	window.addEventListener("keyup", onKeyup, false);
@@ -98,27 +92,27 @@ function onResize(e) {
 };
 
 function onSocketConnected() {
-    console.log("Connected to socket server");
-    socket.emit("new player", {x: localPlayer.getX(), y: localPlayer.getY(), color: localPlayer.getColor()});
+	console.log("Connected to socket server");
+	socket.emit("new player", { x: localPlayer.getX(), y: localPlayer.getY(), color: localPlayer.getColor() });
 };
 
 function onSocketDisconnect() {
-    console.log("Disconnected from socket server");
+	console.log("Disconnected from socket server");
 };
 
 function onNewPlayer(data) {
-  console.log("New player connected: "+data.id);
-  var newPlayer = new Player(data.x, data.y, data.color);
-  newPlayer.id = data.id;
-  remotePlayers.push(newPlayer);
+	console.log("New player connected: " + data.id);
+	var newPlayer = new Player(data.x, data.y, data.color);
+	newPlayer.id = data.id;
+	remotePlayers.push(newPlayer);
 };
 
 function onMovePlayer(data) {
 	var movePlayer = playerById(data.id);
 
 	if (!movePlayer) {
-	    console.log("Player not found: "+data.id);
-	    return;
+		console.log("Player not found: " + data.id);
+		return;
 	};
 
 	movePlayer.setX(data.x);
@@ -128,35 +122,33 @@ function onMovePlayer(data) {
 
 function onRemovePlayer(data) {
 	console.log("player disconnect");
-  var removePlayer = playerById(data.id);
+	var removePlayer = playerById(data.id);
 
-  if (!removePlayer) {
-    console.log("Player not found: " + data.id);
-    return;
-  }
+	if (!removePlayer) {
+		console.log("Player not found: " + data.id);
+		return;
+	}
 
-  remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
+	remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 };
 
-function onShoot(data: Object) {
+function onShoot(data) {
 	var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
 	bullets.push(newBullet);
 }
 
-function onResourceSpawned(data: Object) {
+function onResourceSpawned(data) {
 	var newResource = new Resource(data.x, data.y);
 	resources.push(newResource);
 }
 
-function playerById(id: String) {
-  var i;
-  for (i = 0; i < remotePlayers.length; i++) {
-    if (remotePlayers[i].id == id)
-      return remotePlayers[i];
-  };
-  return false;
+function playerById(id) {
+	var i;
+	for (i = 0; i < remotePlayers.length; i++) {
+		if (remotePlayers[i].id == id) return remotePlayers[i];
+	};
+	return false;
 };
-
 
 /**************************************************
 ** GAME ANIMATION LOOP
@@ -169,14 +161,13 @@ function animate() {
 	window.requestAnimFrame(animate);
 };
 
-
 /**************************************************
 ** GAME UPDATE
 **************************************************/
 function update() {
 	state = localPlayer.update(keys);
 	if (state !== null) {
-    socket.emit(state.command, state);
+		socket.emit(state.command, state);
 	};
 
 	for (var i = 0; i < bullets.length; i++) {
@@ -199,7 +190,6 @@ function update() {
 	}
 };
 
-
 /**************************************************
 ** GAME DRAW
 **************************************************/
@@ -212,7 +202,7 @@ function draw() {
 
 	var i;
 	for (i = 0; i < remotePlayers.length; i++) {
-	  remotePlayers[i].draw(ctx);
+		remotePlayers[i].draw(ctx);
 	};
 
 	for (i = 0; i < bullets.length; i++) {

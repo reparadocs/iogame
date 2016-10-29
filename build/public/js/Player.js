@@ -1,52 +1,53 @@
-//@flow
+
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
 
-var Player = function(startX: number, startY: number, color: number) {
+var Player = function (startX, startY, color) {
 	var x = startX,
-		y = startY,
-		dir: Array<number> = [1,0],
-		color = color,
-		isShooting = false,
-		currentBulletSize = 0,
-		id: String;
+	    y = startY,
+	    dir = [1, 0],
+	    color = color,
+	    isShooting = false,
+	    currentBulletSize = 0,
+	    id;
 
-	var setX = function(newX: number) {
+	var setX = function (newX) {
 		x = newX;
 	};
 
-	var setY = function(newY: number) {
+	var setY = function (newY) {
 		y = newY;
 	};
 
-	var setDir = function(newDir: Array<number>) {
+	var setDir = function (newDir) {
 		dir = newDir;
 	};
 
-	var getX = function() {
+	var getX = function () {
 		return x;
 	};
 
-	var getY = function() {
+	var getY = function () {
 		return y;
-	}
+	};
 
-	var getDir = function() {
+	var getDir = function () {
 		return dir;
 	};
 
-	var getColor = function() {
+	var getColor = function () {
 		return color;
 	};
 
-	var update = function(keys: Object) {
-		var prevX = x, prevY = y;
+	var update = function (keys) {
+		var prevX = x,
+		    prevY = y;
 
 		if (!keys.space && isShooting) {
 			isShooting = false;
-			var rtn = {command: "player shoots", x: x, y: y, dir: dir, size: currentBulletSize};
+			var rtn = { command: "player shoots", x: x, y: y, dir: dir, size: currentBulletSize };
 			currentBulletSize = 0;
 			return rtn;
 		}
@@ -58,10 +59,10 @@ var Player = function(startX: number, startY: number, color: number) {
 			}
 		} else {
 			if (keys.up) {
-				dir = [0,-1];
+				dir = [0, -1];
 			}
 			if (keys.down) {
-				dir = [0,1];
+				dir = [0, 1];
 			};
 			if (keys.left) {
 				dir = [-1, 0];
@@ -74,17 +75,17 @@ var Player = function(startX: number, startY: number, color: number) {
 			y = y + dir[1] * Constants.playerSpeed;
 
 			if (prevX != x || prevY != y) {
-				return {command: "move player", x: x, y: y, dir: dir};
+				return { command: "move player", x: x, y: y, dir: dir };
 			}
 		}
 
 		return null;
 	};
 
-	var draw = function(ctx: Object) {
+	var draw = function (ctx) {
 		ctx.fillStyle = color;
 		ctx.beginPath();
-		ctx.arc(x, y, Constants.playerSize, 0, 2*Math.PI);
+		ctx.arc(x, y, Constants.playerSize, 0, 2 * Math.PI);
 		ctx.fill();
 	};
 
@@ -99,7 +100,7 @@ var Player = function(startX: number, startY: number, color: number) {
 		getDir: getDir,
 		getColor: getColor,
 		id: id
-	}
+	};
 };
 
 exports.Player = Player;
