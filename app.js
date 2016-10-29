@@ -1,6 +1,7 @@
 var util = require("util")
 var Player = require("./public/js/Player").Player;
 var Bullet = require("./public/js/Bullet").Bullet;
+var Collisions = require("./public/js/Collisions").Collisions;
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);

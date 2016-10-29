@@ -39,6 +39,7 @@ function init() {
 	}
 	remotePlayers = [];
 	bullets = [];
+	Collisions = new Collisions();
 	// Start listening for events
 	setEventHandlers();
 
@@ -163,8 +164,25 @@ function update() {
 	};
 
 	for (var i = 0; i < bullets.length; i++) {
-		bullets[i].update();
+		currentBullet = bullets[i]
+		currentBullet.update();
+		for (var j = 0; j < remotePlayers.length; j++) {
+			currentPlayer = remotePlayers[j];
+			if (Collisions.hasCollided(currentPlayer, currentBullet)) {
+				console.log("A player has been hit!");
+				remotePlayers.splice(j, 1);
+			}
+		}
+
+		if (Collisions.hasCollided(localPlayer, currentBullet)) {
+			console.log("Rishab is an idiot!");
+		}
+
+
+		
+
 	}
+
 };
 
 
