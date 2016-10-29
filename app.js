@@ -2,6 +2,7 @@ var util = require("util")
 var Player = require("./public/js/Player").Player;
 var Resource = require("./public/js/Resource").Resource;
 var Bullet = require("./public/js/Bullet").Bullet;
+var Collisions = require("./public/js/Collisions").Collisions;
 var Constants = require("./public/js/Constants").Constants;
 var express = require('express');
 var app = express();

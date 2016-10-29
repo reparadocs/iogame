@@ -40,6 +40,7 @@ function init() {
 	}
 	remotePlayers = [];
 	bullets = [];
+	Collisions = new Collisions();
 	resources = [];
 	// Start listening for events
 	setEventHandlers();
@@ -171,9 +172,20 @@ function update() {
 	};
 
 	for (var i = 0; i < bullets.length; i++) {
-		bullets[i].update();
-	}
+		currentBullet = bullets[i];
+		currentBullet.update();
+		for (var j = 0; j < remotePlayers.length; j++) {
+			currentPlayer = remotePlayers[j];
+			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
+				console.log("A player has been hit!");
+				remotePlayers.splice(j, 1);
+			}
+		}
 
+		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
+			console.log("Local player has been hit");
+		}
+	}
 	for (var i = 0; i < resources.length; i++) {
 		resources[i].update();
 	}
