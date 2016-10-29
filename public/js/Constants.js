@@ -1,7 +1,24 @@
-var Constants = {
+//@flow
+var Constants: {
+  gameHeight: number,
+  gameWidth: number,
+
+  borderSize: number,
+
+  playerSpeed: number,
+  playerSize: number,
+
+  bulletSize: number,
+  bulletSpeed: number,
+  bulletDelay: number,
+  bulletMaxSize: number,
+  bulletGrowthRate: number,
+
+  resourceSize: number,
+  numResources: number
+} = {
   gameHeight: 600,
   gameWidth: 1000,
-
   borderSize: 2,
 
   playerSpeed: 3,
@@ -17,12 +34,4 @@ var Constants = {
   numResources: 100
 };
 
-(function(exports){
-
-  exports.Constants = {
-    numResources: Constants.numResources,
-    gameWidth: Constants.gameWidth,
-    gameHeight: Constants.gameHeight
-  };
-
-}(typeof exports === 'undefined' ? this.share = {} : exports));
+exports.Constants = Constants;

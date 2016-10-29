@@ -1,14 +1,17 @@
+//@flow
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
-var Player = function(startX, startY, color) {
+var Constants = require('./Constants').Constants;
+
+var Player = function(startX: number, startY: number, color: number) {
 	var x = startX,
 		y = startY,
-		dir = [1,0], 
+		dir: Array<number> = [1,0],
 		color = color,
 		isShooting = false,
 		currentBulletSize = 0,
-		id,
+		id: String,
 		currentBulletCount = 1;
 
 
@@ -19,16 +22,16 @@ var Player = function(startX, startY, color) {
 	var getCurrentBulletCount = function() {
 		return currentBulletCount;
 	};
- 
-	var setX = function(newX) {
+
+	var setX = function(newX: number) {
 		x = newX;
 	};
 
-	var setY = function(newY) {
+	var setY = function(newY: number) {
 		y = newY;
 	};
 
-	var setDir = function(newDir) {
+	var setDir = function(newDir: Array<number>) {
 		dir = newDir;
 	};
 
@@ -48,12 +51,18 @@ var Player = function(startX, startY, color) {
 		return color;
 	};
 
-	var update = function(keys) {
+	var update = function(keys: Object) {
 		var prevX = x, prevY = y;
 
 		if (!keys.space && isShooting) {
 			isShooting = false;
-			rtn = {command: "player shoots", x: x, y: y, dir: dir, size: currentBulletSize};
+			var rtn = {
+				command: "player shoots",
+				x: x,
+				y: y,
+				dir: dir,
+				size: currentBulletSize,
+			};
 			currentBulletSize = 0;
 			currentBulletCount = currentBulletCount - 1;
 			return rtn;
@@ -69,7 +78,7 @@ var Player = function(startX, startY, color) {
 		} else {
 			if (keys.up) {
 				dir = [0,-1];
-			}	
+			}
 			if (keys.down) {
 				dir = [0,1];
 			};
@@ -87,13 +96,13 @@ var Player = function(startX, startY, color) {
 
 			if (prevX != x || prevY != y) {
 				return {command: "move player", x: x, y: y, dir: dir};
-			} 
+			}
 		}
 
 		return null;
 	};
 
-	var draw = function(ctx) {
+	var draw = function(ctx: Object) {
 		ctx.fillStyle = color;
 		ctx.beginPath();
 		ctx.arc(x, y, Constants.playerSize, 0, 2*Math.PI);
@@ -111,12 +120,9 @@ var Player = function(startX, startY, color) {
 		getDir: getDir,
 		getColor: getColor,
 		setCurrentBulletCount: setCurrentBulletCount,
-		getCurrentBulletCount: getCurrentBulletCount
+		getCurrentBulletCount: getCurrentBulletCount,
+		id: id
 	}
 };
 
-(function(exports){
-
-  exports.Player = Player;
-
-}(typeof exports === 'undefined' ? this.share = {} : exports));
+exports.Player = Player;

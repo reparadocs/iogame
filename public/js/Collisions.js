@@ -1,8 +1,15 @@
+//@flow
 /**************************************************
 ** Collisions Class
 **************************************************/
 var Collisions = function() {
-  var hasHitBoundary = function(x, y, dir, playerSpeed, size) {
+  var hasHitBoundary = function(
+    x: number,
+    y: number,
+    dir: Array<Number>,
+    playerSpeed: number,
+    size: number
+  ) {
     x_pos = x + dir[0] * playerSpeed + size;
     x_neg = x + dir[0] * playerSpeed - size;
     y_pos = y + dir[1] * playerSpeed + size;
@@ -13,8 +20,15 @@ var Collisions = function() {
     return false;
   }
 
-  var hasCollided = function(obj1, obj2, obj1XSize, obj1YSize, obj2XSize, obj2YSize) {
-    if (inBounds(obj1, obj2, obj2XSize, obj2YSize) || 
+  var hasCollided = function(
+    obj1: Object,
+    obj2: Object,
+    obj1XSize: number,
+    obj1YSize: number,
+    obj2XSize: number,
+    obj2YSize: number
+  ) {
+    if (inBounds(obj1, obj2, obj2XSize, obj2YSize) ||
       inBounds(obj2, obj1, obj1XSize, obj1YSize)) {
       return true;
     }
@@ -37,8 +51,4 @@ var Collisions = function() {
   }
 };
 
-(function(exports){
-
-  exports.Collisions = Collisions;
-
-}(typeof exports === 'undefined' ? this.share = {} : exports));
+exports.Collisions = Collisions;
