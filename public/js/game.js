@@ -183,7 +183,7 @@ function update() {
 		}
 
 		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
-			console.log("Rishab is an idiot!");
+			console.log("Local player has been hit");
 		}
 	}
 	for (var i = 0; i < resources.length; i++) {
