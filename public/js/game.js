@@ -184,13 +184,23 @@ function update() {
 		currentBullet.update();
 		for (var j = 0; j < remotePlayers.length; j++) {
 			currentPlayer = remotePlayers[j];
-			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
+			if (Collisions.hasCollided(
+				currentPlayer,
+				currentBullet,
+				Constants.playerSize,
+				Constants.playerSize,
+			)) {
 				console.log("A player has been hit!");
 				remotePlayers.splice(j, 1);
 			}
 		}
 
-		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
+		if (Collisions.hasCollided(
+			localPlayer,
+			currentBullet,
+			Constants.playerSize,
+			Constants.playerSize,
+		)) {
 			console.log("Local player has been hit");
 		}
 	}

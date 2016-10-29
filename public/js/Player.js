@@ -46,7 +46,13 @@ var Player = function(startX: number, startY: number, color: number) {
 
 		if (!keys.space && isShooting) {
 			isShooting = false;
-			var rtn = {command: "player shoots", x: x, y: y, dir: dir, size: currentBulletSize};
+			var rtn = {
+				command: "player shoots",
+				x: x,
+				y: y,
+				dir: dir,
+				size: currentBulletSize,
+			};
 			currentBulletSize = 0;
 			return rtn;
 		}
