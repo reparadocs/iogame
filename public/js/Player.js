@@ -1,11 +1,13 @@
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
-var Player = function(startX, startY) {
+var Player = function(startX, startY, color) {
 	var x = startX,
 		y = startY,
 		dir = [1,0], 
-		lastShot = 0,
+		color = color,
+		isShooting = false,
+		currentBulletSize = 0,
 		id;
 
 	var setX = function(newX) {
@@ -32,41 +34,55 @@ var Player = function(startX, startY) {
 		return dir;
 	};
 
+	var getColor = function() {
+		return color;
+	};
+
 	var update = function(keys) {
 		var prevX = x, prevY = y;
 
-		// Up key takes priority over down
-		if (keys.up) {
-			y -= Constants.playerSpeed;
-			dir = [0,-1];
-		} else if (keys.down) {
-			y += Constants.playerSpeed;
-			dir = [0,1];
-		};
+		if (!keys.space && isShooting) {
+			isShooting = false;
+			rtn = {command: "player shoots", x: x, y: y, dir: dir, size: currentBulletSize};
+			currentBulletSize = 0;
+			return rtn;
+		}
 
-		// Left key takes priority over right
-		if (keys.left) {
-			x -= Constants.playerSpeed;
-			dir = [-1, 0];
-		} else if (keys.right) {
-			x += Constants.playerSpeed;
-			dir = [1, 0];
-		};
+		if (keys.space) {
+			isShooting = true;
+			if (currentBulletSize < Constants.bulletMaxSize) {
+				currentBulletSize += Constants.bulletGrowthRate;
+			}
+		} else {
+			if (keys.up) {
+				dir = [0,-1];
+			}	
+			if (keys.down) {
+				dir = [0,1];
+			};
+			if (keys.left) {
+				dir = [-1, 0];
+			}
+			if (keys.right) {
+				dir = [1, 0];
+			};
 
-		if (prevX != x || prevY != y) {
-			return {command: "move player", x: x, y: y, dir: dir};
-		} 
+			x = x + dir[0] * Constants.playerSpeed;
+			y = y + dir[1] * Constants.playerSpeed;
 
-		if (keys.space && (Date.now() - lastShot > Constants.bulletDelay)) {
-			lastShot = Date.now();
-			return {command: "player shoots", x: x, y: y, dir: dir};
+			if (prevX != x || prevY != y) {
+				return {command: "move player", x: x, y: y, dir: dir};
+			} 
 		}
 
 		return null;
 	};
 
 	var draw = function(ctx) {
-		ctx.fillRect(x-(Constants.playerSize / 2), y-(Constants.playerSize / 2), Constants.playerSize, Constants.playerSize);
+		ctx.fillStyle = color;
+		ctx.beginPath();
+		ctx.arc(x, y, Constants.playerSize, 0, 2*Math.PI);
+		ctx.fill();
 	};
 
 	return {
@@ -77,7 +93,8 @@ var Player = function(startX, startY) {
 		setDir: setDir,
 		getX: getX,
 		getY: getY,
-		getDir: getDir
+		getDir: getDir,
+		getColor: getColor
 	}
 };
 

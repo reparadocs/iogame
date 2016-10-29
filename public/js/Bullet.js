@@ -1,10 +1,11 @@
 /**************************************************
 ** GAME Bullet CLASS
 **************************************************/
-var Bullet = function(startX, startY, startDir) {
+var Bullet = function(startX, startY, startDir, size) {
   var x = startX,
     y = startY,
     dir = startDir,
+    size = size,
     id;
 
   var setX = function(newX) {
@@ -31,13 +32,20 @@ var Bullet = function(startX, startY, startDir) {
     return dir;
   };
 
+  var getSize = function() {
+    return size;
+  };
+
   var update = function() {
     x += dir[0] * Constants.bulletSpeed;
     y += dir[1] * Constants.bulletSpeed;
   };
 
   var draw = function(ctx) {
-    ctx.fillRect(x-(Constants.bulletSize / 2), y-(Constants.bulletSize / 2), Constants.bulletSize, Constants.bulletSize);
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2*Math.PI);
+    ctx.fill();
   };
 
   return {
@@ -48,7 +56,8 @@ var Bullet = function(startX, startY, startDir) {
     setDir: setDir,
     getX: getX,
     getY: getY,
-    getDir: getDir
+    getDir: getDir,
+    getSize: getSize
   }
 };
 
