@@ -7,6 +7,7 @@ var canvas,			// Canvas DOM element
 	localPlayer, // Local player
 	remotePlayers,
 	bullets,
+	resources,
 	socket;
 
 /**************************************************
@@ -31,7 +32,7 @@ function init() {
 		startY = Math.round(Math.random()*(Constants.gameHeight-5));
 
 	// Initialise the local player
-	localPlayer = new Player(startX, startY);
+	localPlayer = new Player(startX, startY, '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6));
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
 	} else {
@@ -40,6 +41,7 @@ function init() {
 	remotePlayers = [];
 	bullets = [];
 	Collisions = new Collisions();
+	resources = [];
 	// Start listening for events
 	setEventHandlers();
 
@@ -63,6 +65,7 @@ var setEventHandlers = function() {
 	socket.on("move player", onMovePlayer);	
 	socket.on("remove player", onRemovePlayer);
 	socket.on("player shoots", onShoot);
+	socket.on("resource spawned", onResourceSpawned);
 };
 
 // Keyboard key down
@@ -88,7 +91,7 @@ function onResize(e) {
 
 function onSocketConnected() {
     console.log("Connected to socket server");
-    socket.emit("new player", {x: localPlayer.getX(), y: localPlayer.getY()});
+    socket.emit("new player", {x: localPlayer.getX(), y: localPlayer.getY(), color: localPlayer.getColor()});
 };
 
 function onSocketDisconnect() {
@@ -97,7 +100,7 @@ function onSocketDisconnect() {
 
 function onNewPlayer(data) {
   console.log("New player connected: "+data.id);
-  var newPlayer = new Player(data.x, data.y);
+  var newPlayer = new Player(data.x, data.y, data.color);
   newPlayer.id = data.id;
   remotePlayers.push(newPlayer);
 };
@@ -128,8 +131,13 @@ function onRemovePlayer(data) {
 };
 
 function onShoot(data) {
-	var newBullet = new Bullet(data.x, data.y, data.dir);
+	var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
 	bullets.push(newBullet);
+}
+
+function onResourceSpawned(data) {
+	var newResource = new Resource(data.x, data.y);
+	resources.push(newResource);
 }
 
 function playerById(id) {
@@ -177,12 +185,10 @@ function update() {
 		if (Collisions.hasCollided(localPlayer, currentBullet)) {
 			console.log("Rishab is an idiot!");
 		}
-
-
-		
-
 	}
-
+	for (var i = 0; i < resources.length; i++) {
+		resources[i].update();
+	}
 };
 
 
@@ -205,6 +211,11 @@ function draw() {
 		bullets[i].draw(ctx);
 	}
 
+	for (i = 0; i < resources.length; i++) {
+		resources[i].draw(ctx);
+	}
+
+	ctx.fillStyle = '#000';
 	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
 	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
 	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);

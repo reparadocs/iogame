@@ -10,4 +10,19 @@ var Constants = {
   bulletSize: 2,
   bulletSpeed: 5,
   bulletDelay: 200,
+  bulletMaxSize: 40,
+  bulletGrowthRate: 0.2,
+
+  resourceSize: 2,
+  numResources: 20
 };
+
+(function(exports){
+
+  exports.Constants = {
+    numResources: Constants.numResources,
+    gameWidth: Constants.gameWidth,
+    gameHeight: Constants.gameHeight
+  };
+
+}(typeof exports === 'undefined' ? this.share = {} : exports));
