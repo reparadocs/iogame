@@ -8,8 +8,18 @@ var Player = function(startX, startY, color) {
 		color = color,
 		isShooting = false,
 		currentBulletSize = 0,
-		id;
+		id,
+		currentBulletCount = 1;
 
+
+	var setCurrentBulletCount = function(newBulletCount) {
+		currentBulletCount = newBulletCount;
+	};
+
+	var getCurrentBulletCount = function() {
+		return currentBulletCount;
+	};
+ 
 	var setX = function(newX) {
 		x = newX;
 	};
@@ -45,13 +55,16 @@ var Player = function(startX, startY, color) {
 			isShooting = false;
 			rtn = {command: "player shoots", x: x, y: y, dir: dir, size: currentBulletSize};
 			currentBulletSize = 0;
+			currentBulletCount = currentBulletCount - 1;
 			return rtn;
 		}
 
 		if (keys.space) {
-			isShooting = true;
-			if (currentBulletSize < Constants.bulletMaxSize) {
-				currentBulletSize += Constants.bulletGrowthRate;
+			if (currentBulletCount > 0) {
+				isShooting = true;
+				if (currentBulletSize < Constants.bulletMaxSize) {
+					currentBulletSize += Constants.bulletGrowthRate;
+				}
 			}
 		} else {
 			if (keys.up) {
@@ -67,8 +80,10 @@ var Player = function(startX, startY, color) {
 				dir = [1, 0];
 			};
 
-			x = x + dir[0] * Constants.playerSpeed;
-			y = y + dir[1] * Constants.playerSpeed;
+			if (!Collisions.hasHitBoundary(x, y, dir, Constants.playerSpeed, Constants.playerSize)) {
+				x = x + dir[0] * Constants.playerSpeed;
+				y = y + dir[1] * Constants.playerSpeed;
+			}
 
 			if (prevX != x || prevY != y) {
 				return {command: "move player", x: x, y: y, dir: dir};
@@ -94,7 +109,9 @@ var Player = function(startX, startY, color) {
 		getX: getX,
 		getY: getY,
 		getDir: getDir,
-		getColor: getColor
+		getColor: getColor,
+		setCurrentBulletCount: setCurrentBulletCount,
+		getCurrentBulletCount: getCurrentBulletCount
 	}
 };
 
