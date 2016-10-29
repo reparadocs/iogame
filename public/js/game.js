@@ -172,17 +172,17 @@ function update() {
 	};
 
 	for (var i = 0; i < bullets.length; i++) {
-		currentBullet = bullets[i]
+		currentBullet = bullets[i];
 		currentBullet.update();
 		for (var j = 0; j < remotePlayers.length; j++) {
 			currentPlayer = remotePlayers[j];
-			if (Collisions.hasCollided(currentPlayer, currentBullet)) {
+			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
 				console.log("A player has been hit!");
 				remotePlayers.splice(j, 1);
 			}
 		}
 
-		if (Collisions.hasCollided(localPlayer, currentBullet)) {
+		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
 			console.log("Rishab is an idiot!");
 		}
 	}

@@ -2,8 +2,8 @@
 ** Collisions Class
 **************************************************/
 var Collisions = function() {
-  var hasCollided = function(player, bullet) {
-    if (inBounds(bullet, player, Constants.playerSize, Constants.playerSize)) {
+  var hasCollided = function(obj1, obj2, obj2XSide, obj2YSize) {
+    if (inBounds(obj1, obj2, obj2XSide, obj2YSize)) {
       return true;
     }
     return false;
