@@ -3,6 +3,7 @@
 ** GAME PLAYER CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var Collisions = require('./Collisions').Collisions();
 
 var Player = function(startX: number, startY: number, color: number) {
 	var x = startX,
@@ -15,7 +16,7 @@ var Player = function(startX: number, startY: number, color: number) {
 		currentBulletCount = 1;
 
 
-	var setCurrentBulletCount = function(newBulletCount) {
+	var setCurrentBulletCount = function(newBulletCount: number) {
 		currentBulletCount = newBulletCount;
 	};
 

@@ -3,7 +3,7 @@ var Constants = require('./Constants').Constants;
 var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
-var Collisions = require('./Collisions').Collisions;
+var Collisions = require('./Collisions').Collisions();
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
 /**************************************************
@@ -13,7 +13,7 @@ var canvas,			// Canvas DOM element
 	ctx: Object,			// Canvas rendering context
 	keys: Object,			// Keyboard input
 	localPlayer: Object, // Local player
-	remotePlayers: Array<Object>,
+	remotePlayers: Array<Object>, // Remote players
 	bullets: Array<Object>,
 	resources: Array<Object>,
 	socket: Object;
@@ -33,8 +33,6 @@ function init() {
 	// Initialise keyboard controls
 	keys = new Keys();
 
-
-
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
@@ -50,7 +48,6 @@ function init() {
 	}
 	remotePlayers = [];
 	bullets = [];
-	Collisions = new Collisions();
 	resources = [];
 	ready = false;
 
