@@ -62,15 +62,30 @@ function onClientDisconnect() {
 function onNewPlayer(data) {
   var newPlayer = new Player(data.x, data.y, data.color);
   newPlayer.id = this.id;
-  this.broadcast.emit("new player", { id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), dir: newPlayer.getDir(), color: newPlayer.getColor() });
+  this.broadcast.emit("new player", {
+    id: newPlayer.id,
+    x: newPlayer.getX(),
+    y: newPlayer.getY(),
+    dir: newPlayer.getDir(),
+    color: newPlayer.getColor()
+  });
   var i, existingPlayer;
   for (i = 0; i < players.length; i++) {
     existingPlayer = players[i];
-    this.emit("new player", { id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), dir: existingPlayer.getDir(), color: existingPlayer.getColor() });
+    this.emit("new player", {
+      id: existingPlayer.id,
+      x: existingPlayer.getX(),
+      y: existingPlayer.getY(),
+      dir: existingPlayer.getDir(),
+      color: existingPlayer.getColor()
+    });
   };
   for (i = 0; i < resources.length; i++) {
     var existingResource = resources[i];
-    this.emit("resource spawned", { x: existingResource.getX(), y: existingResource.getY() });
+    this.emit("resource spawned", {
+      x: existingResource.getX(),
+      y: existingResource.getY()
+    });
   }
   players.push(newPlayer);
 };
@@ -87,13 +102,23 @@ function onMovePlayer(data) {
   movePlayer.setY(data.y);
   movePlayer.setDir(data.dir);
 
-  this.broadcast.emit("move player", { id: movePlayer.id, x: movePlayer.getX(), y: movePlayer.getY(), dir: movePlayer.getDir() });
+  this.broadcast.emit("move player", {
+    id: movePlayer.id,
+    x: movePlayer.getX(),
+    y: movePlayer.getY(),
+    dir: movePlayer.getDir()
+  });
 };
 
 function onShoot(data) {
   var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
   bullets.push(newBullet);
-  io.sockets.emit("player shoots", { x: newBullet.getX(), y: newBullet.getY(), dir: newBullet.getDir(), size: newBullet.getSize() });
+  io.sockets.emit("player shoots", {
+    x: newBullet.getX(),
+    y: newBullet.getY(),
+    dir: newBullet.getDir(),
+    size: newBullet.getSize()
+  });
 }
 
 function playerById(id) {

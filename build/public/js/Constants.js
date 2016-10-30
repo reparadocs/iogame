@@ -1,7 +1,6 @@
 var Constants = {
-  gameHeight: 200,
-  gameWidth: 200,
-
+  gameHeight: 600,
+  gameWidth: 1000,
   borderSize: 2,
 
   playerSpeed: 3,
@@ -14,7 +13,7 @@ var Constants = {
   bulletGrowthRate: 0.2,
 
   resourceSize: 2,
-  numResources: 20
+  numResources: 100
 };
 
 exports.Constants = Constants;

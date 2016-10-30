@@ -3,6 +3,7 @@
 ** GAME PLAYER CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var Collisions = require('./Collisions').Collisions();
 
 var Player = function(startX: number, startY: number, color: number) {
 	var x = startX,
@@ -11,7 +12,17 @@ var Player = function(startX: number, startY: number, color: number) {
 		color = color,
 		isShooting = false,
 		currentBulletSize = 0,
-		id: String;
+		id: String,
+		currentBulletCount = 1;
+
+
+	var setCurrentBulletCount = function(newBulletCount: number) {
+		currentBulletCount = newBulletCount;
+	};
+
+	var getCurrentBulletCount = function() {
+		return currentBulletCount;
+	};
 
 	var setX = function(newX: number) {
 		x = newX;
@@ -54,13 +65,16 @@ var Player = function(startX: number, startY: number, color: number) {
 				size: currentBulletSize,
 			};
 			currentBulletSize = 0;
+			currentBulletCount = currentBulletCount - 1;
 			return rtn;
 		}
 
 		if (keys.space) {
-			isShooting = true;
-			if (currentBulletSize < Constants.bulletMaxSize) {
-				currentBulletSize += Constants.bulletGrowthRate;
+			if (currentBulletCount > 0) {
+				isShooting = true;
+				if (currentBulletSize < Constants.bulletMaxSize) {
+					currentBulletSize += Constants.bulletGrowthRate;
+				}
 			}
 		} else {
 			if (keys.up) {
@@ -76,8 +90,10 @@ var Player = function(startX: number, startY: number, color: number) {
 				dir = [1, 0];
 			};
 
-			x = x + dir[0] * Constants.playerSpeed;
-			y = y + dir[1] * Constants.playerSpeed;
+			if (!Collisions.hasHitBoundary(x, y, dir, Constants.playerSpeed, Constants.playerSize)) {
+				x = x + dir[0] * Constants.playerSpeed;
+				y = y + dir[1] * Constants.playerSpeed;
+			}
 
 			if (prevX != x || prevY != y) {
 				return {command: "move player", x: x, y: y, dir: dir};
@@ -104,6 +120,8 @@ var Player = function(startX: number, startY: number, color: number) {
 		getY: getY,
 		getDir: getDir,
 		getColor: getColor,
+		setCurrentBulletCount: setCurrentBulletCount,
+		getCurrentBulletCount: getCurrentBulletCount,
 		id: id
 	}
 };

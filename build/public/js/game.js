@@ -3,7 +3,7 @@ var Constants = require('./Constants').Constants;
 var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
-var Collisions = require('./Collisions').Collisions;
+var Collisions = require('./Collisions').Collisions();
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
 /**************************************************
@@ -36,8 +36,8 @@ function init() {
 	var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
 	    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
 
-	// Initialise the local player
 	localPlayer = new Player(startX, startY, '#' + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6));
+
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
 	} else {
@@ -45,8 +45,9 @@ function init() {
 	}
 	remotePlayers = [];
 	bullets = [];
-	Collisions = new Collisions();
 	resources = [];
+	ready = false;
+
 	// Start listening for events
 	setEventHandlers();
 };
@@ -154,8 +155,20 @@ function playerById(id) {
 ** GAME ANIMATION LOOP
 **************************************************/
 function animate() {
-	update();
-	draw();
+	if (!ready) {
+		drawLoading();
+		if (keys.space) {
+			ready = true;
+			// Initialise the local player
+			var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
+			    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
+			localPlayer.setX(startX);
+			localPlayer.setY(startY);
+		}
+	} else {
+		update();
+		draw();
+	}
 
 	// Request a new animation frame using Paul Irish's shim
 	window.requestAnimFrame(animate);
@@ -175,18 +188,30 @@ function update() {
 		currentBullet.update();
 		for (var j = 0; j < remotePlayers.length; j++) {
 			currentPlayer = remotePlayers[j];
-			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
+			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize, currentBullet.getSize(), currentBullet.getSize())) {
 				console.log("A player has been hit!");
 				remotePlayers.splice(j, 1);
+				bullets.splice(i, 1);
 			}
 		}
 
-		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize)) {
-			console.log("Local player has been hit");
+		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize, currentBullet.getSize(), currentBullet.getSize())) {
+			console.log("You have been killed!");
+			ready = false;
+		}
+
+		if (Collisions.hasHitBoundary(currentBullet.getX(), currentBullet.getY(), currentBullet.getDir(), Constants.bulletSpeed, Constants.bulletSize)) {
+			bullets.splice(i, 1);
 		}
 	}
 	for (var i = 0; i < resources.length; i++) {
-		resources[i].update();
+		var currentResource = resources[i];
+		currentResource.update();
+		if (Collisions.hasCollided(localPlayer, currentResource, Constants.playerSize, Constants.playerSize, Constants.resourceSize, Constants.resourceSize)) {
+			console.log("You have picked up a resource!");
+			resources.splice(i, 1);
+			localPlayer.setCurrentBulletCount(localPlayer.getCurrentBulletCount() + 1);
+		}
 	}
 };
 
@@ -218,6 +243,23 @@ function draw() {
 	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
 	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
 	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
+};
+
+/**************************************************
+** LOADING SCREEN DRAW
+**************************************************/
+function drawLoading() {
+	// Wipe the canvas clean
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	ctx.fillStyle = '#000';
+	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
+	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
+	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
+	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
+
+	ctx.font = "36px serif";
+	ctx.fillText("Welcome to Dodgeball! Press Space to start", 10, 50);
 };
 
 init();
