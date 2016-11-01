@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "prestart": "babel ./src --out-dir=./build/src && babel ./public/js --out-dir=./build/public/js && browserify ./build/public/js/game.js -o ./build/public/bundle.js",
+    "prestart": "flow check && babel ./src --out-dir=./build/src && babel ./public/js --out-dir=./build/public/js && browserify ./build/public/js/game.js -o ./build/public/bundle.js",
     "start": "node build/src/app.js"
   },
   "dependencies": {
