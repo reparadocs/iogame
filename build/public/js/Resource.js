@@ -11,7 +11,7 @@ class Resource extends GameObject {
   }
 
   draw(ctx) {
-    super.draw(ctx);
+    ctx.fillStyle = this._color;
     ctx.beginPath();
     ctx.arc(this._x, this._y, Constants.resourceSize, 0, 2 * Math.PI);
     ctx.fill();

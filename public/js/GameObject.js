@@ -8,6 +8,7 @@ class GameObject {
   _height: number;
   _width: number;
   _color: string;
+  _alive: boolean;
 
   constructor(
     startX: number,
@@ -21,6 +22,7 @@ class GameObject {
     this._height = height;
     this._width = width;
     this._color = color;
+    this._alive = true;
   }
 
   getX() {
@@ -45,6 +47,14 @@ class GameObject {
 
   getWidth() {
     return this._width;
+  }
+
+  getAlive() {
+    return this._alive;
+  }
+
+  setAlive(alive: boolean) {
+    this._alive = alive;
   }
 
   collision(otherObj: GameObject, x: ?number, y: ?number) {

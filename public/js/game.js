@@ -12,8 +12,8 @@ var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 **************************************************/
 var canvas,			// Canvas DOM element
 	ctx: Object,			// Canvas rendering context
-	keys: Object,			// Keyboard input
-	localPlayer: Object, // Local player
+	keys: Key,			// Keyboard input
+	localPlayer: Player, // Local player,
 	remotePlayers: Array<Object>, // Remote players
 	bullets: Array<Object>,
 	resources: Array<Object>,
@@ -38,7 +38,7 @@ function init() {
 	var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
 		startY = Math.round(Math.random()*(Constants.gameHeight-5));
 
-	localPlayer = new Player(startX, startY, '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6));
+	localPlayer = new Player(startX, startY, '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), createBullet);
 
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
@@ -115,7 +115,7 @@ function onSocketDisconnect() {
 
 function onNewPlayer(data) {
   console.log("New player connected: "+data.id);
-  var newPlayer = new Player(data.x, data.y, data.color);
+  var newPlayer = new Player(data.x, data.y, data.color, createBullet);
   newPlayer.id = data.id;
   remotePlayers.push(newPlayer);
 };
@@ -173,25 +173,22 @@ function playerById(id: String) {
   return false;
 };
 
+function createBullet(
+	x: number,
+	y: number,
+	dir: Array<number>,
+	size: number,
+	id: string,
+) {
+	bullets.push(new Bullet(x, y, dir, size, id));
+}
 
 /**************************************************
 ** GAME ANIMATION LOOP
 **************************************************/
 function animate() {
-	if (!ready) {
-		drawLoading();
-		if (keys.space) {
-			ready = true;
-			// Initialise the local player
-			var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
-				startY = Math.round(Math.random()*(Constants.gameHeight-5));
-			localPlayer.setX(startX);
-			localPlayer.setY(startY);
-		}
-	} else {
-		update();
-		draw();
-	}
+	update();
+	draw();
 
 	// Request a new animation frame using Paul Irish's shim
 	window.requestAnimFrame(animate);
@@ -202,42 +199,31 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	state = localPlayer.update(keys, borders);
-	if (state !== null) {
-    socket.emit(state.command, state);
-	};
+	localPlayer.update(borders, resources);
+
+	for (var i = 0; i < remotePlayers.length; i++) {
+		remotePlayers[i].update(borders, resources);
+		if (!remotePlayers[i].getAlive()) {
+			remotePlayers.splice(i, 1);
+		}
+	}
 
 	for (var i = 0; i < bullets.length; i++) {
-		currentBullet = bullets[i];
-		currentBullet.update();
-		for (var j = 0; j < remotePlayers.length; j++) {
-			currentPlayer = remotePlayers[j];
-			if (currentBullet.collision(currentPlayer)) {
-				console.log("A player has been hit!");
-				remotePlayers.splice(j, 1);
-				bullets.splice(i, 1);
-			}
-		}
-
-		if (currentBullet.collision(localPlayer)) {
-			console.log("You have been killed!");
-			ready = false;
-		}
-
-		for (var j = 0; j < borders.length; j++) {
-			if (currentBullet.collision(borders[j])) {
-				bullets.splice(i, 1);
-			}
+		bullets[i].update(borders, localPlayer, remotePlayers);
+		if (!bullets[i].getAlive()) {
+			bullets.splice(i, 1);
 		}
 	}
 
 	for (var i = 0; i < resources.length; i++) {
-		var currentResource = resources[i];
-		if (currentResource.collision(localPlayer)) {
-			console.log("You have picked up a resource!");
+		if (!resources[i].getAlive()) {
 			resources.splice(i, 1);
-			localPlayer.setBulletCount(localPlayer.getBulletCount() + 1);
 		}
+	}
+
+	if (!localPlayer.getAlive()) {
+		ready = false;
+		location.reload();
 	}
 };
 
@@ -283,7 +269,7 @@ function drawLoading() {
 	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
 
 	ctx.font = "36px serif";
-  	ctx.fillText("Welcome to Dodgeball! Press Space to start", 10, 50);
+  ctx.fillText("Welcome to Dodgeball! Press Space to start", 10, 50);
 };
 
 init();

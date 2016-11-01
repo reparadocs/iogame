@@ -7,10 +7,11 @@ var GameObject = require('./GameObject').GameObject;
 
 class Bullet extends GameObject {
 
-  constructor(startX, startY, startDir, size) {
+  constructor(startX, startY, startDir, size, owner) {
     super(startX, startY, size, size, '#000');
     this._dir = startDir;
     this._size = size;
+    this._owner = owner;
   }
 
   getSize() {
@@ -21,13 +22,31 @@ class Bullet extends GameObject {
     return this._dir;
   }
 
-  update() {
+  update(borders, localPlayer, remotePlayers) {
     this._x += this._dir[0] * Constants.bulletSpeed;
     this._y += this._dir[1] * Constants.bulletSpeed;
+
+    for (var i = 0; i < borders.length; i++) {
+      if (this.collision(borders[i])) {
+        this._alive = false;
+      }
+    }
+
+    for (var i = 0; i < remotePlayers.length; i++) {
+      if (this.collision(remotePlayers[i]) && remotePlayers[i].id != this._owner) {
+        this._alive = false;
+        remotePlayers[i].setAlive(false);
+      }
+    }
+
+    if (localPlayer.id != this._owner && this.collision(localPlayer)) {
+      this._alive = false;
+      localPlayer.setAlive(false);
+    }
   }
 
   draw(ctx) {
-    super.draw(ctx);
+    ctx.fillStyle = this._color;
     ctx.beginPath();
     ctx.arc(this._x, this._y, this._size, 0, 2 * Math.PI);
     ctx.fill();

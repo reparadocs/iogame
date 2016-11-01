@@ -2,75 +2,55 @@
 /**************************************************
 ** GAME KEYBOARD CLASS
 **************************************************/
-var Keys = function () {
-	var up = up || false,
-	    left = left || false,
-	    right = right || false,
-	    down = down || false,
-	    space = space || false;
+var Commands = require('./Commands').Commands;
 
-	var onKeyDown = function (e) {
-		var that = this,
-		    c = e.keyCode;
+class Keys {
+
+	constructor(localPlayer, socket) {
+		this._localPlayer = localPlayer;
+		this._socket = socket;
+		this._fired = true;
+	}
+
+	onKeyDown(e) {
+		const c = e.keyCode;
 		switch (c) {
-			// Controls
 			case 32:
-				that.space = true;
+				// Space
+				if (this._fired) {
+					this._fired = false;
+					Commands.chargeShot(this._localPlayer, Date.now(), this._socket);
+				}
 				break;
 			case 37:
 				// Left
-				that.left = true;
+				Commands.changeDirection(this._localPlayer, -1, 0, this._socket);
 				break;
 			case 38:
 				// Up
-				that.up = true;
+				Commands.changeDirection(this._localPlayer, 0, -1, this._socket);
 				break;
 			case 39:
 				// Right
-				that.right = true; // Will take priority over the left key
+				Commands.changeDirection(this._localPlayer, 1, 0, this._socket);
 				break;
 			case 40:
 				// Down
-				that.down = true;
+				Commands.changeDirection(this._localPlayer, 0, 1, this._socket);
 				break;
 		};
-	};
+	}
 
-	var onKeyUp = function (e) {
-		var that = this,
-		    c = e.keyCode;
+	onKeyUp(e) {
+		const c = e.keyCode;
 		switch (c) {
 			case 32:
-				that.space = false;
-				break;
-			case 37:
-				// Left
-				that.left = false;
-				break;
-			case 38:
-				// Up
-				that.up = false;
-				break;
-			case 39:
-				// Right
-				that.right = false;
-				break;
-			case 40:
-				// Down
-				that.down = false;
+				// Space
+				this._fired = true;
+				Commands.shoot(this._localPlayer, Date.now(), this._socket);
 				break;
 		};
-	};
-
-	return {
-		up: up,
-		left: left,
-		right: right,
-		down: down,
-		space: space,
-		onKeyDown: onKeyDown,
-		onKeyUp: onKeyUp
-	};
-};
+	}
+}
 
 exports.Keys = Keys;

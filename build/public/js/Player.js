@@ -3,17 +3,18 @@
 ** GAME PLAYER CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
-var Collisions = require('./Collisions').Collisions();
 var GameObject = require('./GameObject').GameObject;
 
 class Player extends GameObject {
 
-	constructor(startX, startY, color) {
+	constructor(startX, startY, color, createBullet) {
 		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
 		this._dir = [1, 0];
 		this._isShooting = false;
 		this._currentBulletSize = 0;
 		this._bulletCount = 1;
+		this._chargeTime = 0;
+		this._createBullet = createBullet;
 	}
 
 	getBulletCount() {
@@ -36,66 +37,46 @@ class Player extends GameObject {
 		return this._color;
 	}
 
-	update(keys, borders) {
-		var prevX = this._x,
-		    prevY = this._y;
-
-		if (!keys.space && this._isShooting) {
-			this._isShooting = false;
-			var rtn = {
-				command: "player shoots",
-				x: this._x,
-				y: this._y,
-				dir: this._dir,
-				size: this._currentBulletSize
-			};
-			this._currentBulletSize = 0;
-			this._bulletCount = this._bulletCount - 1;
-			return rtn;
+	chargeShot(time) {
+		if (this._bulletCount > 0) {
+			this._chargeTime = time;
 		}
+	}
 
-		if (keys.space) {
-			if (this._bulletCount > 0) {
-				this._isShooting = true;
-				if (this._currentBulletSize < Constants.bulletMaxSize) {
-					this._currentBulletSize += Constants.bulletGrowthRate;
-				}
-			}
-		} else {
-			if (keys.up) {
-				this._dir = [0, -1];
-			}
-			if (keys.down) {
-				this._dir = [0, 1];
-			};
-			if (keys.left) {
-				this._dir = [-1, 0];
-			}
-			if (keys.right) {
-				this._dir = [1, 0];
-			};
-			let borderCollision = false;
-			for (var i = 0; i < borders.length; i++) {
-				if (this.collision(borders[i], this._x + this._dir[0] * Constants.playerSpeed, this._y + this._dir[1] * Constants.playerSpeed)) {
-					borderCollision = true;
-					break;
-				}
-			}
-			if (!borderCollision) {
-				this._x = this._x + this._dir[0] * Constants.playerSpeed;
-				this._y = this._y + this._dir[1] * Constants.playerSpeed;
-			}
+	shoot(time) {
+		if (this._chargeTime !== 0 && this._bulletCount > 0) {
+			const charged = time - this._chargeTime;
+			this._bulletCount -= 1;
+			const size = charged * Constants.bulletGrowthRate > Constants.bulletMaxSize ? Constants.bulletMaxSize : charged * Constants.bulletGrowthRate;
+			this._createBullet(this._x, this._y, this._dir, size, this.id);
+		}
+		this._chargeTime = 0;
+	}
 
-			if (prevX != this._x || prevY != this._y) {
-				return { command: "move player", x: this._x, y: this._y, dir: this._dir };
+	update(borders, resources) {
+		let borderCollision = false;
+		for (var i = 0; i < borders.length; i++) {
+			if (this.collision(borders[i], this._x + this._dir[0] * Constants.playerSpeed, this._y + this._dir[1] * Constants.playerSpeed)) {
+				borderCollision = true;
+				break;
 			}
 		}
 
-		return null;
+		if (!borderCollision && this._chargeTime === 0) {
+			this._x = this._x + this._dir[0] * Constants.playerSpeed;
+			this._y = this._y + this._dir[1] * Constants.playerSpeed;
+
+			for (var i = 0; i < resources.length; i++) {
+				if (this.collision(resources[i])) {
+					resources[i].setAlive(false);
+					this._bulletCount += 1;
+				}
+			}
+		}
 	}
 
 	draw(ctx) {
-		super.draw(ctx);
+		ctx.fillStyle = this._color;
 		ctx.beginPath();
 		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2 * Math.PI);
 		ctx.fill();

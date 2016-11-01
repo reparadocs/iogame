@@ -4,7 +4,7 @@ var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
 var GameObject = require('./GameObject').GameObject;
-var Collisions = require('./Collisions').Collisions();
+var Commands = require('./Commands').Commands;
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
 /**************************************************
@@ -13,7 +13,7 @@ var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 var canvas, // Canvas DOM element
 ctx, // Canvas rendering context
 keys, // Keyboard input
-localPlayer, // Local player
+localPlayer, // Local player,
 remotePlayers, // Remote players
 bullets, resources, borders, socket;
 
@@ -29,22 +29,23 @@ function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	// Initialise keyboard controls
-	keys = new Keys();
-
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
 	var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
 	    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
 
-	localPlayer = new Player(startX, startY, '#' + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6));
+	localPlayer = new Player(startX, startY, '#' + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6), createBullet);
 
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
 	} else {
 		socket = io.connect("https://testiogame.herokuapp.com");
 	}
+
+	// Initialise keyboard controls
+	keys = new Keys(localPlayer, socket);
+
 	remotePlayers = [];
 	bullets = [];
 	resources = [];
@@ -68,8 +69,9 @@ var setEventHandlers = function () {
 	socket.on("connect", onSocketConnected);
 	socket.on("disconnect", onSocketDisconnect);
 	socket.on("new player", onNewPlayer);
-	socket.on("move player", onMovePlayer);
+	socket.on("change player direction", onChangePlayerDirection);
 	socket.on("remove player", onRemovePlayer);
+	socket.on("player charges shot", onChargeShot);
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
 };
@@ -106,21 +108,18 @@ function onSocketDisconnect() {
 
 function onNewPlayer(data) {
 	console.log("New player connected: " + data.id);
-	var newPlayer = new Player(data.x, data.y, data.color);
+	var newPlayer = new Player(data.x, data.y, data.color, createBullet);
 	newPlayer.id = data.id;
 	remotePlayers.push(newPlayer);
 };
 
-function onMovePlayer(data) {
-	var movePlayer = playerById(data.id);
-
-	if (!movePlayer) {
+function onChangePlayerDirection(data) {
+	var player = playerById(data.id);
+	if (!player) {
 		console.log("Player not found: " + data.id);
 		return;
 	};
-	movePlayer.setX(data.x);
-	movePlayer.setY(data.y);
-	movePlayer.setDir(data.dir);
+	Commands.changeDirection(player, data.xDir, data.yDir);
 };
 
 function onRemovePlayer(data) {
@@ -135,9 +134,22 @@ function onRemovePlayer(data) {
 	remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 };
 
+function onChargeShot(data) {
+	var player = playerById(data.id);
+	if (!player) {
+		console.log("Player not found: " + data.id);
+		return;
+	};
+	Commands.chargeShot(player, data.time);
+}
+
 function onShoot(data) {
-	var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
-	bullets.push(newBullet);
+	var player = playerById(data.id);
+	if (!player) {
+		console.log("Player not found: " + data.id);
+		return;
+	};
+	Commands.shoot(player, data.time);
 }
 
 function onResourceSpawned(data) {
@@ -153,24 +165,16 @@ function playerById(id) {
 	return false;
 };
 
+function createBullet(x, y, dir, size, id) {
+	bullets.push(new Bullet(x, y, dir, size, id));
+}
+
 /**************************************************
 ** GAME ANIMATION LOOP
 **************************************************/
 function animate() {
-	if (!ready) {
-		drawLoading();
-		if (keys.space) {
-			ready = true;
-			// Initialise the local player
-			var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
-			    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
-			localPlayer.setX(startX);
-			localPlayer.setY(startY);
-		}
-	} else {
-		update();
-		draw();
-	}
+	update();
+	draw();
 
 	// Request a new animation frame using Paul Irish's shim
 	window.requestAnimFrame(animate);
@@ -180,42 +184,31 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	state = localPlayer.update(keys, borders);
-	if (state !== null) {
-		socket.emit(state.command, state);
-	};
+	localPlayer.update(borders, resources);
+
+	for (var i = 0; i < remotePlayers.length; i++) {
+		remotePlayers[i].update(borders, resources);
+		if (!remotePlayers[i].getAlive()) {
+			remotePlayers.splice(i, 1);
+		}
+	}
 
 	for (var i = 0; i < bullets.length; i++) {
-		currentBullet = bullets[i];
-		currentBullet.update();
-		for (var j = 0; j < remotePlayers.length; j++) {
-			currentPlayer = remotePlayers[j];
-			if (currentBullet.collision(currentPlayer)) {
-				console.log("A player has been hit!");
-				remotePlayers.splice(j, 1);
-				bullets.splice(i, 1);
-			}
-		}
-
-		if (currentBullet.collision(localPlayer)) {
-			console.log("You have been killed!");
-			ready = false;
-		}
-
-		for (var j = 0; j < borders.length; j++) {
-			if (currentBullet.collision(borders[j])) {
-				bullets.splice(i, 1);
-			}
+		bullets[i].update(borders, localPlayer, remotePlayers);
+		if (!bullets[i].getAlive()) {
+			bullets.splice(i, 1);
 		}
 	}
 
 	for (var i = 0; i < resources.length; i++) {
-		var currentResource = resources[i];
-		if (currentResource.collision(localPlayer)) {
-			console.log("You have picked up a resource!");
+		if (!resources[i].getAlive()) {
 			resources.splice(i, 1);
-			localPlayer.setBulletCount(localPlayer.getBulletCount() + 1);
 		}
+	}
+
+	if (!localPlayer.getAlive()) {
+		ready = false;
+		location.reload();
 	}
 };
 
@@ -244,12 +237,6 @@ function draw() {
 	for (i = 0; i < borders.length; i++) {
 		borders[i].draw(ctx);
 	}
-	/*
- 	ctx.fillStyle = '#000';
- 	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
- 	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
- 	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
- 	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);*/
 };
 
 /**************************************************

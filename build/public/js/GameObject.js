@@ -10,6 +10,7 @@ class GameObject {
     this._height = height;
     this._width = width;
     this._color = color;
+    this._alive = true;
   }
 
   getX() {
@@ -36,6 +37,14 @@ class GameObject {
     return this._width;
   }
 
+  getAlive() {
+    return this._alive;
+  }
+
+  setAlive(alive) {
+    this._alive = alive;
+  }
+
   collision(otherObj, x, y) {
     x = x || this._x;
     y = y || this._y;
@@ -44,20 +53,6 @@ class GameObject {
     const distX = otherObj.getWidth() + this._width;
     const distY = otherObj.getHeight() + this._height;
     return diffX < distX && diffY < distY;
-  }
-
-  uncollide(otherObj) {
-    const diffX = Math.abs(this._x - otherObj.getX());
-    const diffY = Math.abs(this._y - otherObj.getY());
-    const distX = otherObj.getWidth() + this._width;
-    const distY = otherObj.getHeight() + this._height;
-    const intrusionX = diffX - distX;
-    const intrusionY = diffY - distY;
-    if (intrusionX > intrusionY) {
-      this._x = this._x > otherObj.getX() ? otherObj.getX() + distX : otherObj.getX() - distX;
-    } else {
-      this._y = this._y > otherObj.getY() ? otherObj.getY() + distY : otherObj.getY() - distY;
-    }
   }
 
   draw(ctx) {

@@ -7,11 +7,9 @@ var Constants = {
   playerSpeed: 3,
   playerSize: 10,
 
-  bulletSize: 2,
   bulletSpeed: 5,
-  bulletDelay: 200,
   bulletMaxSize: 40,
-  bulletGrowthRate: 0.2,
+  bulletGrowthRate: 0.02,
 
   resourceSize: 2,
   numResources: 100

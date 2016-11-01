@@ -6,8 +6,8 @@ var util = require("util");
 var Player = require("../public/js/Player").Player;
 var Resource = require("../public/js/Resource").Resource;
 var Bullet = require("../public/js/Bullet").Bullet;
-var Collisions = require("../public/js/Collisions").Collisions;
 var Constants = require("../public/js/Constants").Constants;
+var Commands = require("../public/js/Commands").Commands;
 var io = require("socket.io")(server);
 
 server.listen(process.env.PORT || 3000);
@@ -42,7 +42,8 @@ function onSocketConnection(client) {
   util.log("New player has connected: " + client.id);
   client.on("disconnect", onClientDisconnect);
   client.on("new player", onNewPlayer);
-  client.on("move player", onMovePlayer);
+  client.on("change player direction", onChangePlayerDirection);
+  client.on("player charges shot", onChargeShot);
   client.on("player shoots", onShoot);
 };
 
@@ -60,7 +61,7 @@ function onClientDisconnect() {
 };
 
 function onNewPlayer(data) {
-  var newPlayer = new Player(data.x, data.y, data.color);
+  var newPlayer = new Player(data.x, data.y, data.color, createBullet);
   newPlayer.id = this.id;
   this.broadcast.emit("new player", {
     id: newPlayer.id,
@@ -90,34 +91,43 @@ function onNewPlayer(data) {
   players.push(newPlayer);
 };
 
-function onMovePlayer(data) {
-  var movePlayer = playerById(this.id);
-
-  if (!movePlayer) {
+function onChangePlayerDirection(data) {
+  var player = playerById(this.id);
+  if (!player) {
     util.log("Player not found: " + this.id);
     return;
   };
-
-  movePlayer.setX(data.x);
-  movePlayer.setY(data.y);
-  movePlayer.setDir(data.dir);
-
-  this.broadcast.emit("move player", {
-    id: movePlayer.id,
-    x: movePlayer.getX(),
-    y: movePlayer.getY(),
-    dir: movePlayer.getDir()
+  Commands.changeDirection(player, data.xDir, data.yDir);
+  this.broadcast.emit("change player direction", {
+    id: player.id,
+    xDir: player.getDir()[0],
+    yDir: player.getDir()[1]
   });
 };
 
+function onChargeShot(data) {
+  var player = playerById(this.id);
+  if (!player) {
+    util.log("Player not found: " + this.id);
+    return;
+  };
+  Commands.chargeShot(player, data.time);
+  this.broadcast.emit("player charges shot", {
+    id: player.id,
+    time: data.time
+  });
+}
+
 function onShoot(data) {
-  var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
-  bullets.push(newBullet);
-  io.sockets.emit("player shoots", {
-    x: newBullet.getX(),
-    y: newBullet.getY(),
-    dir: newBullet.getDir(),
-    size: newBullet.getSize()
+  var player = playerById(this.id);
+  if (!player) {
+    util.log("Player not found: " + this.id);
+    return;
+  };
+  Commands.shoot(player, data.time);
+  this.broadcast.emit("player shoots", {
+    id: player.id,
+    time: data.time
   });
 }
 
@@ -130,5 +140,9 @@ function playerById(id) {
   }
   return false;
 };
+
+function createBullet(x, y, dir, size, id) {
+  bullets.push(new Bullet(x, y, dir, size, id));
+}
 
 init();

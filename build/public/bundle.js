@@ -8,10 +8,11 @@ var GameObject = require('./GameObject').GameObject;
 
 class Bullet extends GameObject {
 
-  constructor(startX, startY, startDir, size) {
+  constructor(startX, startY, startDir, size, owner) {
     super(startX, startY, size, size, '#000');
     this._dir = startDir;
     this._size = size;
+    this._owner = owner;
   }
 
   getSize() {
@@ -22,13 +23,31 @@ class Bullet extends GameObject {
     return this._dir;
   }
 
-  update() {
+  update(borders, localPlayer, remotePlayers) {
     this._x += this._dir[0] * Constants.bulletSpeed;
     this._y += this._dir[1] * Constants.bulletSpeed;
+
+    for (var i = 0; i < borders.length; i++) {
+      if (this.collision(borders[i])) {
+        this._alive = false;
+      }
+    }
+
+    for (var i = 0; i < remotePlayers.length; i++) {
+      if (this.collision(remotePlayers[i]) && remotePlayers[i].id != this._owner) {
+        this._alive = false;
+        remotePlayers[i].setAlive(false);
+      }
+    }
+
+    if (localPlayer.id != this._owner && this.collision(localPlayer)) {
+      this._alive = false;
+      localPlayer.setAlive(false);
+    }
   }
 
   draw(ctx) {
-    super.draw(ctx);
+    ctx.fillStyle = this._color;
     ctx.beginPath();
     ctx.arc(this._x, this._y, this._size, 0, 2 * Math.PI);
     ctx.fill();
@@ -37,46 +56,31 @@ class Bullet extends GameObject {
 
 exports.Bullet = Bullet;
 },{"./Constants":3,"./GameObject":4}],2:[function(require,module,exports){
-
-/**************************************************
-** Collisions Class
-**************************************************/
-var Constants = require('./Constants').Constants;
-
-var Collisions = function () {
-  var hasHitBoundary = function (x, y, dir, playerSpeed, size) {
-    var x_pos = x + dir[0] * playerSpeed + size;
-    var x_neg = x + dir[0] * playerSpeed - size;
-    var y_pos = y + dir[1] * playerSpeed + size;
-    var y_neg = y + dir[1] * playerSpeed - size;
-    if (x_neg <= 0 || x_pos >= Constants.gameWidth || y_neg <= 0 || y_pos >= Constants.gameHeight) {
-      return true;
+class Commands {
+  static changeDirection(player, xDir, yDir, socket = null) {
+    player.setDir([xDir, yDir]);
+    if (socket) {
+      socket.emit("change player direction", { xDir: xDir, yDir: yDir });
     }
-    return false;
-  };
+  }
 
-  var hasCollided = function (obj1, obj2, obj1XSize, obj1YSize, obj2XSize, obj2YSize) {
-    if (inBounds(obj1, obj2, obj2XSize, obj2YSize) || inBounds(obj2, obj1, obj1XSize, obj1YSize)) {
-      return true;
+  static chargeShot(player, time, socket = null) {
+    player.chargeShot(time);
+    if (socket) {
+      socket.emit("player charges shot", { time: time });
     }
-    return false;
-  };
+  }
 
-  var inBounds = function (obj1, obj2, obj2XSize, obj2YSize) {
-    if (obj1.getX() > obj2.getX() - obj2XSize / 2 && obj1.getX() < obj2.getX() + obj2XSize / 2 && obj1.getY() > obj2.getY() - obj2YSize / 2 && obj1.getY() < obj2.getY() + obj2YSize / 2) {
-      return true;
+  static shoot(player, time, socket = null) {
+    player.shoot(time);
+    if (socket) {
+      socket.emit("player shoots", { time: time });
     }
-    return false;
-  };
+  }
+}
 
-  return {
-    hasCollided: hasCollided,
-    hasHitBoundary: hasHitBoundary
-  };
-};
-
-exports.Collisions = Collisions;
-},{"./Constants":3}],3:[function(require,module,exports){
+exports.Commands = Commands;
+},{}],3:[function(require,module,exports){
 var Constants = {
   gameHeight: 600,
   gameWidth: 1000,
@@ -86,11 +90,9 @@ var Constants = {
   playerSpeed: 3,
   playerSize: 10,
 
-  bulletSize: 2,
   bulletSpeed: 5,
-  bulletDelay: 200,
   bulletMaxSize: 40,
-  bulletGrowthRate: 0.2,
+  bulletGrowthRate: 0.02,
 
   resourceSize: 2,
   numResources: 100
@@ -110,6 +112,7 @@ class GameObject {
     this._height = height;
     this._width = width;
     this._color = color;
+    this._alive = true;
   }
 
   getX() {
@@ -136,6 +139,14 @@ class GameObject {
     return this._width;
   }
 
+  getAlive() {
+    return this._alive;
+  }
+
+  setAlive(alive) {
+    this._alive = alive;
+  }
+
   collision(otherObj, x, y) {
     x = x || this._x;
     y = y || this._y;
@@ -144,20 +155,6 @@ class GameObject {
     const distX = otherObj.getWidth() + this._width;
     const distY = otherObj.getHeight() + this._height;
     return diffX < distX && diffY < distY;
-  }
-
-  uncollide(otherObj) {
-    const diffX = Math.abs(this._x - otherObj.getX());
-    const diffY = Math.abs(this._y - otherObj.getY());
-    const distX = otherObj.getWidth() + this._width;
-    const distY = otherObj.getHeight() + this._height;
-    const intrusionX = diffX - distX;
-    const intrusionY = diffY - distY;
-    if (intrusionX > intrusionY) {
-      this._x = this._x > otherObj.getX() ? otherObj.getX() + distX : otherObj.getX() - distX;
-    } else {
-      this._y = this._y > otherObj.getY() ? otherObj.getY() + distY : otherObj.getY() - distY;
-    }
   }
 
   draw(ctx) {
@@ -172,95 +169,76 @@ exports.GameObject = GameObject;
 /**************************************************
 ** GAME KEYBOARD CLASS
 **************************************************/
-var Keys = function () {
-	var up = up || false,
-	    left = left || false,
-	    right = right || false,
-	    down = down || false,
-	    space = space || false;
+var Commands = require('./Commands').Commands;
 
-	var onKeyDown = function (e) {
-		var that = this,
-		    c = e.keyCode;
+class Keys {
+
+	constructor(localPlayer, socket) {
+		this._localPlayer = localPlayer;
+		this._socket = socket;
+		this._fired = true;
+	}
+
+	onKeyDown(e) {
+		const c = e.keyCode;
 		switch (c) {
-			// Controls
 			case 32:
-				that.space = true;
+				// Space
+				if (this._fired) {
+					this._fired = false;
+					Commands.chargeShot(this._localPlayer, Date.now(), this._socket);
+				}
 				break;
 			case 37:
 				// Left
-				that.left = true;
+				Commands.changeDirection(this._localPlayer, -1, 0, this._socket);
 				break;
 			case 38:
 				// Up
-				that.up = true;
+				Commands.changeDirection(this._localPlayer, 0, -1, this._socket);
 				break;
 			case 39:
 				// Right
-				that.right = true; // Will take priority over the left key
+				Commands.changeDirection(this._localPlayer, 1, 0, this._socket);
 				break;
 			case 40:
 				// Down
-				that.down = true;
+				Commands.changeDirection(this._localPlayer, 0, 1, this._socket);
 				break;
 		};
-	};
+	}
 
-	var onKeyUp = function (e) {
-		var that = this,
-		    c = e.keyCode;
+	onKeyUp(e) {
+		const c = e.keyCode;
 		switch (c) {
 			case 32:
-				that.space = false;
-				break;
-			case 37:
-				// Left
-				that.left = false;
-				break;
-			case 38:
-				// Up
-				that.up = false;
-				break;
-			case 39:
-				// Right
-				that.right = false;
-				break;
-			case 40:
-				// Down
-				that.down = false;
+				// Space
+				this._fired = true;
+				Commands.shoot(this._localPlayer, Date.now(), this._socket);
 				break;
 		};
-	};
-
-	return {
-		up: up,
-		left: left,
-		right: right,
-		down: down,
-		space: space,
-		onKeyDown: onKeyDown,
-		onKeyUp: onKeyUp
-	};
-};
+	}
+}
 
 exports.Keys = Keys;
-},{}],6:[function(require,module,exports){
+},{"./Commands":2}],6:[function(require,module,exports){
 
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
-var Collisions = require('./Collisions').Collisions();
 var GameObject = require('./GameObject').GameObject;
 
 class Player extends GameObject {
 
-	constructor(startX, startY, color) {
+	constructor(startX, startY, color, createBullet) {
 		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
 		this._dir = [1, 0];
 		this._isShooting = false;
 		this._currentBulletSize = 0;
 		this._bulletCount = 1;
+		this._chargeTime = 0;
+		this._createBullet = createBullet;
 	}
 
 	getBulletCount() {
@@ -283,66 +261,46 @@ class Player extends GameObject {
 		return this._color;
 	}
 
-	update(keys, borders) {
-		var prevX = this._x,
-		    prevY = this._y;
-
-		if (!keys.space && this._isShooting) {
-			this._isShooting = false;
-			var rtn = {
-				command: "player shoots",
-				x: this._x,
-				y: this._y,
-				dir: this._dir,
-				size: this._currentBulletSize
-			};
-			this._currentBulletSize = 0;
-			this._bulletCount = this._bulletCount - 1;
-			return rtn;
+	chargeShot(time) {
+		if (this._bulletCount > 0) {
+			this._chargeTime = time;
 		}
+	}
 
-		if (keys.space) {
-			if (this._bulletCount > 0) {
-				this._isShooting = true;
-				if (this._currentBulletSize < Constants.bulletMaxSize) {
-					this._currentBulletSize += Constants.bulletGrowthRate;
-				}
-			}
-		} else {
-			if (keys.up) {
-				this._dir = [0, -1];
-			}
-			if (keys.down) {
-				this._dir = [0, 1];
-			};
-			if (keys.left) {
-				this._dir = [-1, 0];
-			}
-			if (keys.right) {
-				this._dir = [1, 0];
-			};
-			let borderCollision = false;
-			for (var i = 0; i < borders.length; i++) {
-				if (this.collision(borders[i], this._x + this._dir[0] * Constants.playerSpeed, this._y + this._dir[1] * Constants.playerSpeed)) {
-					borderCollision = true;
-					break;
-				}
-			}
-			if (!borderCollision) {
-				this._x = this._x + this._dir[0] * Constants.playerSpeed;
-				this._y = this._y + this._dir[1] * Constants.playerSpeed;
-			}
+	shoot(time) {
+		if (this._chargeTime !== 0 && this._bulletCount > 0) {
+			const charged = time - this._chargeTime;
+			this._bulletCount -= 1;
+			const size = charged * Constants.bulletGrowthRate > Constants.bulletMaxSize ? Constants.bulletMaxSize : charged * Constants.bulletGrowthRate;
+			this._createBullet(this._x, this._y, this._dir, size, this.id);
+		}
+		this._chargeTime = 0;
+	}
 
-			if (prevX != this._x || prevY != this._y) {
-				return { command: "move player", x: this._x, y: this._y, dir: this._dir };
+	update(borders, resources) {
+		let borderCollision = false;
+		for (var i = 0; i < borders.length; i++) {
+			if (this.collision(borders[i], this._x + this._dir[0] * Constants.playerSpeed, this._y + this._dir[1] * Constants.playerSpeed)) {
+				borderCollision = true;
+				break;
 			}
 		}
 
-		return null;
+		if (!borderCollision && this._chargeTime === 0) {
+			this._x = this._x + this._dir[0] * Constants.playerSpeed;
+			this._y = this._y + this._dir[1] * Constants.playerSpeed;
+
+			for (var i = 0; i < resources.length; i++) {
+				if (this.collision(resources[i])) {
+					resources[i].setAlive(false);
+					this._bulletCount += 1;
+				}
+			}
+		}
 	}
 
 	draw(ctx) {
-		super.draw(ctx);
+		ctx.fillStyle = this._color;
 		ctx.beginPath();
 		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2 * Math.PI);
 		ctx.fill();
@@ -350,7 +308,7 @@ class Player extends GameObject {
 }
 
 exports.Player = Player;
-},{"./Collisions":2,"./Constants":3,"./GameObject":4}],7:[function(require,module,exports){
+},{"./Constants":3,"./GameObject":4}],7:[function(require,module,exports){
 
 /**************************************************
 ** GAME Resouce CLASS
@@ -364,7 +322,7 @@ class Resource extends GameObject {
   }
 
   draw(ctx) {
-    super.draw(ctx);
+    ctx.fillStyle = this._color;
     ctx.beginPath();
     ctx.arc(this._x, this._y, Constants.resourceSize, 0, 2 * Math.PI);
     ctx.fill();
@@ -379,7 +337,7 @@ var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
 var GameObject = require('./GameObject').GameObject;
-var Collisions = require('./Collisions').Collisions();
+var Commands = require('./Commands').Commands;
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
 /**************************************************
@@ -388,7 +346,7 @@ var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 var canvas, // Canvas DOM element
 ctx, // Canvas rendering context
 keys, // Keyboard input
-localPlayer, // Local player
+localPlayer, // Local player,
 remotePlayers, // Remote players
 bullets, resources, borders, socket;
 
@@ -404,22 +362,23 @@ function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	// Initialise keyboard controls
-	keys = new Keys();
-
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
 	var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
 	    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
 
-	localPlayer = new Player(startX, startY, '#' + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6));
+	localPlayer = new Player(startX, startY, '#' + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6), createBullet);
 
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
 	} else {
 		socket = io.connect("https://testiogame.herokuapp.com");
 	}
+
+	// Initialise keyboard controls
+	keys = new Keys(localPlayer, socket);
+
 	remotePlayers = [];
 	bullets = [];
 	resources = [];
@@ -443,8 +402,9 @@ var setEventHandlers = function () {
 	socket.on("connect", onSocketConnected);
 	socket.on("disconnect", onSocketDisconnect);
 	socket.on("new player", onNewPlayer);
-	socket.on("move player", onMovePlayer);
+	socket.on("change player direction", onChangePlayerDirection);
 	socket.on("remove player", onRemovePlayer);
+	socket.on("player charges shot", onChargeShot);
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
 };
@@ -481,21 +441,18 @@ function onSocketDisconnect() {
 
 function onNewPlayer(data) {
 	console.log("New player connected: " + data.id);
-	var newPlayer = new Player(data.x, data.y, data.color);
+	var newPlayer = new Player(data.x, data.y, data.color, createBullet);
 	newPlayer.id = data.id;
 	remotePlayers.push(newPlayer);
 };
 
-function onMovePlayer(data) {
-	var movePlayer = playerById(data.id);
-
-	if (!movePlayer) {
+function onChangePlayerDirection(data) {
+	var player = playerById(data.id);
+	if (!player) {
 		console.log("Player not found: " + data.id);
 		return;
 	};
-	movePlayer.setX(data.x);
-	movePlayer.setY(data.y);
-	movePlayer.setDir(data.dir);
+	Commands.changeDirection(player, data.xDir, data.yDir);
 };
 
 function onRemovePlayer(data) {
@@ -510,9 +467,22 @@ function onRemovePlayer(data) {
 	remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 };
 
+function onChargeShot(data) {
+	var player = playerById(data.id);
+	if (!player) {
+		console.log("Player not found: " + data.id);
+		return;
+	};
+	Commands.chargeShot(player, data.time);
+}
+
 function onShoot(data) {
-	var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
-	bullets.push(newBullet);
+	var player = playerById(data.id);
+	if (!player) {
+		console.log("Player not found: " + data.id);
+		return;
+	};
+	Commands.shoot(player, data.time);
 }
 
 function onResourceSpawned(data) {
@@ -528,24 +498,16 @@ function playerById(id) {
 	return false;
 };
 
+function createBullet(x, y, dir, size, id) {
+	bullets.push(new Bullet(x, y, dir, size, id));
+}
+
 /**************************************************
 ** GAME ANIMATION LOOP
 **************************************************/
 function animate() {
-	if (!ready) {
-		drawLoading();
-		if (keys.space) {
-			ready = true;
-			// Initialise the local player
-			var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
-			    startY = Math.round(Math.random() * (Constants.gameHeight - 5));
-			localPlayer.setX(startX);
-			localPlayer.setY(startY);
-		}
-	} else {
-		update();
-		draw();
-	}
+	update();
+	draw();
 
 	// Request a new animation frame using Paul Irish's shim
 	window.requestAnimFrame(animate);
@@ -555,42 +517,31 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	state = localPlayer.update(keys, borders);
-	if (state !== null) {
-		socket.emit(state.command, state);
-	};
+	localPlayer.update(borders, resources);
+
+	for (var i = 0; i < remotePlayers.length; i++) {
+		remotePlayers[i].update(borders, resources);
+		if (!remotePlayers[i].getAlive()) {
+			remotePlayers.splice(i, 1);
+		}
+	}
 
 	for (var i = 0; i < bullets.length; i++) {
-		currentBullet = bullets[i];
-		currentBullet.update();
-		for (var j = 0; j < remotePlayers.length; j++) {
-			currentPlayer = remotePlayers[j];
-			if (currentBullet.collision(currentPlayer)) {
-				console.log("A player has been hit!");
-				remotePlayers.splice(j, 1);
-				bullets.splice(i, 1);
-			}
-		}
-
-		if (currentBullet.collision(localPlayer)) {
-			console.log("You have been killed!");
-			ready = false;
-		}
-
-		for (var j = 0; j < borders.length; j++) {
-			if (currentBullet.collision(borders[j])) {
-				bullets.splice(i, 1);
-			}
+		bullets[i].update(borders, localPlayer, remotePlayers);
+		if (!bullets[i].getAlive()) {
+			bullets.splice(i, 1);
 		}
 	}
 
 	for (var i = 0; i < resources.length; i++) {
-		var currentResource = resources[i];
-		if (currentResource.collision(localPlayer)) {
-			console.log("You have picked up a resource!");
+		if (!resources[i].getAlive()) {
 			resources.splice(i, 1);
-			localPlayer.setBulletCount(localPlayer.getBulletCount() + 1);
 		}
+	}
+
+	if (!localPlayer.getAlive()) {
+		ready = false;
+		location.reload();
 	}
 };
 
@@ -619,12 +570,6 @@ function draw() {
 	for (i = 0; i < borders.length; i++) {
 		borders[i].draw(ctx);
 	}
-	/*
- 	ctx.fillStyle = '#000';
- 	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
- 	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
- 	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
- 	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);*/
 };
 
 /**************************************************
@@ -646,7 +591,7 @@ function drawLoading() {
 
 init();
 animate();
-},{"./Bullet":1,"./Collisions":2,"./Constants":3,"./GameObject":4,"./Keys":5,"./Player":6,"./Resource":7,"./requestAnimationFrame":9}],9:[function(require,module,exports){
+},{"./Bullet":1,"./Commands":2,"./Constants":3,"./GameObject":4,"./Keys":5,"./Player":6,"./Resource":7,"./requestAnimationFrame":9}],9:[function(require,module,exports){
 // shim layer with setTimeout fallback
 window.requestAnimFrame = function () {
   return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function ( /* function */callback, /* DOMElement */element) {
