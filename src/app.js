@@ -50,7 +50,7 @@ function onSocketConnection(client) {
   util.log("New player has connected: " + client.id);
   client.on("disconnect", onClientDisconnect);
   client.on("new player", onNewPlayer);
-  client.on("change player direction", onChangePlayerDirection);
+  client.on("move player", onMovePlayer);
 	client.on("player charges shot", onChargeShot)
 	client.on("player shoots", onShoot);
 };
@@ -99,17 +99,19 @@ function onNewPlayer(data: Object) {
   players.push(newPlayer);
 };
 
-function onChangePlayerDirection(data) {
+function onMovePlayer(data) {
 	var player = playerById(this.id);
 	if (!player) {
-			util.log("Player not found: "+this.id);
+			console.log("Player not found: "+this.id);
 			return;
 	};
-	Commands.changeDirection(player, data.xDir, data.yDir);
-  this.broadcast.emit("change player direction", {
+	Commands.move(player, data.xMove, data.yMove);
+  this.emit("update", player.serialize());
+  this.broadcast.emit("move player", {
     id: player.id,
-    xDir: player.getDir()[0],
-    yDir: player.getDir()[1],
+    xMove: data.xMove,
+    yMove: data.yMove,
+    serialized: player.serialize(),
   });
 };
 
@@ -120,9 +122,11 @@ function onChargeShot(data: Object) {
 			return;
 	};
 	Commands.chargeShot(player, data.time);
+  this.emit("update", player.serialize());
   this.broadcast.emit("player charges shot", {
     id: player.id,
     time: data.time,
+    serialized: player.serialize(),
   });
 }
 
@@ -133,9 +137,11 @@ function onShoot(data: Object) {
 			return;
 	};
 	Commands.shoot(player, data.time);
+  this.emit("update", player.serialize());
   this.broadcast.emit("player shoots", {
     id: player.id,
     time: data.time,
+    serialized: player.serialize(),
   });
 }
 

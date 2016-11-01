@@ -71,6 +71,21 @@ class GameObject {
     ctx.fillStyle = this._color;
     ctx.fillRect(this._x - (this._width / 2), this._y - (this._height / 2),this._width, this._height);
   }
+
+  applyUpdate(data: Object) {
+    this._alive = data.alive;
+    this._x = data.x;
+    this._y = data.y;
+  }
+
+  serialize() {
+    let serialized: Object = {
+      alive: this._alive,
+      x: this._x,
+      y: this._y,
+    };
+    return serialized;
+  }
 }
 
 exports.GameObject = GameObject;

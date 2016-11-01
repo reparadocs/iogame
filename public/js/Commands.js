@@ -1,9 +1,9 @@
 //@flow
 class Commands{
-  static changeDirection(player: Object, xDir: number, yDir: number, socket: ?Object = null) {
-    player.setDir([xDir, yDir]);
+  static move(player: Object, xMove: number, yMove: number, socket: ?Object = null) {
+    player.setMove([xMove, yMove]);
     if (socket) {
-      socket.emit("change player direction", {xDir: xDir, yDir: yDir});
+      socket.emit("move player", {xMove: xMove, yMove: yMove});
     }
   }
 

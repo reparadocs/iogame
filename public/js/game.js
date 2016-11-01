@@ -35,8 +35,8 @@ function init() {
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
-	var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
-		startY = Math.round(Math.random()*(Constants.gameHeight-5));
+	var startX = Math.round(Math.random()*(Constants.gameWidth-20)) + 10,
+		startY = Math.round(Math.random()*(Constants.gameHeight-20)) + 10;
 
 	localPlayer = new Player(startX, startY, [1,0], '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), createBullet);
 
@@ -76,11 +76,12 @@ var setEventHandlers = function() {
 	socket.on("connect", onSocketConnected);
 	socket.on("disconnect", onSocketDisconnect);
 	socket.on("new player", onNewPlayer);
-	socket.on("change player direction", onChangePlayerDirection);
+	socket.on("move player", onMovePlayer);
 	socket.on("remove player", onRemovePlayer);
 	socket.on("player charges shot", onChargeShot)
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
+	socket.on("update", onUpdateState);
 };
 
 // Keyboard key down
@@ -125,13 +126,14 @@ function onNewPlayer(data) {
   remotePlayers.push(newPlayer);
 };
 
-function onChangePlayerDirection(data) {
+function onMovePlayer(data) {
 	var player = playerById(data.id);
 	if (!player) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
-	Commands.changeDirection(player, data.xDir, data.yDir);
+	player.applyUpdate(data.serialized);
+	Commands.move(player, data.xMove, data.yMove);
 };
 
 function onRemovePlayer(data) {
@@ -152,6 +154,7 @@ function onChargeShot(data: Object) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
+	player.applyUpdate(data.serialized);
 	Commands.chargeShot(player, data.time);
 }
 
@@ -161,12 +164,17 @@ function onShoot(data: Object) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
+	player.applyUpdate(data.serialized);
 	Commands.shoot(player, data.time);
 }
 
 function onResourceSpawned(data: Object) {
 	var newResource = new Resource(data.x, data.y);
 	resources.push(newResource);
+}
+
+function onUpdateState(data: Object) {
+	localPlayer.applyUpdate(data);
 }
 
 function playerById(id: String) {
@@ -204,6 +212,7 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
+	keys.update();
 	localPlayer.update(borders, resources);
 
 	for (var i = 0; i < remotePlayers.length; i++) {

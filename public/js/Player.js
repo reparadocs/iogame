@@ -7,23 +7,21 @@ var GameObject = require('./GameObject').GameObject;
 
 class Player extends GameObject {
 	_dir: Array<number>;
-	_isShooting: boolean;
-	_currentBulletSize: number;
 	id: string;
 	_bulletCount: number;
 	_chargeTime: number;
 	_score: number;
+	_move: Array<number>;
 	_createBullet: Function;
 
 	constructor(startX: number, startY: number, dir: Array<number>, color: string, createBullet: Function) {
 		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
 		this._dir = dir;
-		this._isShooting = false;
-		this._currentBulletSize = 0;
 		this._bulletCount = 1;
 		this._chargeTime = 0;
 		this._createBullet = createBullet;
 		this._score = 0;
+		this._move = [0,0];
 	}
 
 	getBulletCount() {
@@ -42,12 +40,13 @@ class Player extends GameObject {
 		this._score = score;
 	}
 
-	getDir() {
-		return this._dir;
+	setMove(move: Array<number>) {
+		this._move = move;
+		this._dir = move;
 	}
 
-	setDir(dir: Array<number>) {
-		this._dir = dir;
+	getDir() {
+		return this._dir;
 	}
 
 	getColor() {
@@ -78,8 +77,8 @@ class Player extends GameObject {
 		for (var i = 0; i < borders.length; i++) {
 			if (this.collision(
 				borders[i],
-				this._x + this._dir[0] * Constants.playerSpeed,
-				this._y + this._dir[1] * Constants.playerSpeed,
+				this._x + this._move[0] * Constants.playerSpeed,
+				this._y + this._move[1] * Constants.playerSpeed,
 			)) {
 				borderCollision = true;
 				break;
@@ -87,8 +86,8 @@ class Player extends GameObject {
 		}
 
 		if (!borderCollision && this._chargeTime === 0) {
-			this._x = this._x + this._dir[0] * Constants.playerSpeed;
-			this._y = this._y + this._dir[1] * Constants.playerSpeed;
+			this._x += this._move[0] * Constants.playerSpeed;
+			this._y += this._move[1] * Constants.playerSpeed;
 
 			for (var i = 0; i < resources.length; i++) {
 				if (this.collision(resources[i])) {
@@ -97,6 +96,7 @@ class Player extends GameObject {
 				}
 			}
 		}
+		this._move = [0,0];
 	}
 
 	draw(ctx: Object) {
@@ -104,6 +104,21 @@ class Player extends GameObject {
 		ctx.beginPath();
 		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2*Math.PI);
 		ctx.fill();
+	}
+
+	applyUpdate(data: Object) {
+		super.applyUpdate(data);
+		this._dir = data.dir;
+		this._bulletCount = data.bulletCount;
+		this._score = data.score;
+	}
+
+	serialize() {
+		let serialized = super.serialize();
+		serialized.dir = this._dir;
+		serialized.bulletCount = this._bulletCount;
+		serialized.score = this._score;
+		return serialized;
 	}
 }
 
