@@ -40,4 +40,6 @@ jspm_packages
 
 bundle.js
 
-build/*.js
+build/src/
+build/public/js
+build/public/bundle.js
