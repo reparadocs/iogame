@@ -149,9 +149,9 @@ function createBullet(
 	y: number,
 	dir: Array<number>,
 	size: number,
-	id: string,
+	owner: Object,
 ) {
-	bullets.push(new Bullet(x, y, dir, size, id));
+	bullets.push(new Bullet(x, y, dir, size, owner));
 }
 
 init();

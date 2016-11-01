@@ -8,14 +8,14 @@ var GameObject = require('./GameObject').GameObject;
 class Bullet extends GameObject {
   _dir: Array<number>;
   _size: number;
-  _owner: string;
+  _owner: Object;
 
   constructor(
     startX: number,
     startY: number,
     startDir: Array<number>,
     size: number,
-    owner: string,
+    owner: Object,
   ) {
     super(startX, startY, size, size, '#000');
     this._dir = startDir;
@@ -47,16 +47,18 @@ class Bullet extends GameObject {
 
     for (var i = 0; i < remotePlayers.length; i++) {
       if (
-        this.collision(remotePlayers[i]) && remotePlayers[i].id != this._owner
+        this.collision(remotePlayers[i]) && remotePlayers[i].id != this._owner.id
       ) {
         this._alive = false;
         remotePlayers[i].setAlive(false);
+        this._owner.setScore(this._owner.getScore() + 1);
       }
     }
 
-    if (localPlayer.id != this._owner && this.collision(localPlayer)) {
+    if (localPlayer.id != this._owner.id && this.collision(localPlayer)) {
       this._alive = false;
       localPlayer.setAlive(false);
+      this._owner.setScore(this._owner.getScore() + 1);
     }
   }
 

@@ -12,6 +12,7 @@ class Player extends GameObject {
 	id: string;
 	_bulletCount: number;
 	_chargeTime: number;
+	_score: number;
 	_createBullet: Function;
 
 	constructor(startX: number, startY: number, color: string, createBullet: Function) {
@@ -22,6 +23,7 @@ class Player extends GameObject {
 		this._bulletCount = 1;
 		this._chargeTime = 0;
 		this._createBullet = createBullet;
+		this._score = 0;
 	}
 
 	getBulletCount() {
@@ -30,6 +32,14 @@ class Player extends GameObject {
 
 	setBulletCount(newBulletCount: number) {
 		this._bulletCount = newBulletCount;
+	}
+
+	getScore() {
+		return this._score;
+	}
+
+	setScore(score: number) {
+		this._score = score;
 	}
 
 	getDir() {
@@ -58,7 +68,7 @@ class Player extends GameObject {
 				charged * Constants.bulletGrowthRate > Constants.bulletMaxSize
 				? Constants.bulletMaxSize
 				: charged * Constants.bulletGrowthRate;
-			this._createBullet(this._x, this._y, this._dir, size, this.id);
+			this._createBullet(this._x, this._y, this._dir, size, this);
 		}
 		this._chargeTime = 0;
 	}
@@ -76,6 +86,7 @@ class Player extends GameObject {
 			}
 		}
 
+		console.log(this._chargeTime);
 		if (!borderCollision && this._chargeTime === 0) {
 			this._x = this._x + this._dir[0] * Constants.playerSpeed;
 			this._y = this._y + this._dir[1] * Constants.playerSpeed;

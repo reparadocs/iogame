@@ -178,9 +178,9 @@ function createBullet(
 	y: number,
 	dir: Array<number>,
 	size: number,
-	id: string,
+	owner: Object,
 ) {
-	bullets.push(new Bullet(x, y, dir, size, id));
+	bullets.push(new Bullet(x, y, dir, size, owner));
 }
 
 /**************************************************
@@ -253,6 +253,11 @@ function draw() {
 	for (i = 0; i < borders.length; i++) {
 		borders[i].draw(ctx);
 	}
+
+	ctx.fillStyle = '#000';
+	ctx.font = "36px serif";
+	ctx.fillText("Shots: " + localPlayer.getBulletCount(), 10, Constants.gameHeight + 100);
+	ctx.fillText("Score: " + localPlayer.getScore(), 500, Constants.gameHeight + 100);
 };
 
 /**************************************************
