@@ -109,6 +109,7 @@ function onSocketConnected() {
 			dir: localPlayer.getDir(),
 			color: localPlayer.getColor()
 		});
+		localPlayer.id = socket.io.engine.id;
 };
 
 function onSocketDisconnect() {
@@ -176,9 +177,12 @@ function onUpdateState(data: Object) {
 function onDeath(data: Object) {
 	var player = playerById(data.id);
 	if (!player) {
-			localPlayer.reset(data.color);
-			localPlayer.applyUpdate(data.serialized);
-			return;
+			if (localPlayer.id === data.id) {
+				player = localPlayer;
+			} else {
+				console.log("Player not found: "+data.id)
+				return;
+			}
 	};
 	player.reset(data.color);
 	player.applyUpdate(data.serialized);
