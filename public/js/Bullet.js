@@ -33,7 +33,7 @@ class Bullet extends GameObject {
 
   update(
     borders: Array<Object>,
-    localPlayer: Object,
+    localPlayer: ?Object,
     remotePlayers: Array<Object>
   ) {
     this._x += this._dir[0] * Constants.bulletSpeed;
@@ -55,7 +55,7 @@ class Bullet extends GameObject {
       }
     }
 
-    if (localPlayer.id != this._owner.id && this.collision(localPlayer)) {
+    if (localPlayer && localPlayer.id != this._owner.id && this.collision(localPlayer)) {
       this._alive = false;
       localPlayer.setAlive(false);
       this._owner.setScore(this._owner.getScore() + 1);

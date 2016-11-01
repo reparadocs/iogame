@@ -8,6 +8,7 @@ var Resource = require("../public/js/Resource").Resource;
 var Bullet = require("../public/js/Bullet").Bullet;
 var Constants = require("../public/js/Constants").Constants;
 var Commands = require("../public/js/Commands").Commands;
+var GameObject = require("../public/js/GameObject").GameObject;
 var io = require("socket.io")(server);
 
 server.listen(process.env.PORT || 3000);
@@ -26,6 +27,10 @@ function init() {
   players = [];
   bullets = [];
   resources = [];
+  borders = [new GameObject(Constants.borderSize / 2, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'),
+		new GameObject(Constants.gameWidth / 2, Constants.borderSize / 2, Constants.gameWidth, Constants.borderSize,  '#000'),
+		new GameObject(Constants.gameWidth, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight,  '#000'),
+		new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize,  '#000')];
 
   for (var i = 0; i < Constants.numResources; i++) {
     var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
@@ -64,7 +69,7 @@ function onClientDisconnect() {
 };
 
 function onNewPlayer(data: Object) {
-  var newPlayer = new Player(data.x, data.y, data.color, createBullet);
+  var newPlayer = new Player(data.x, data.y, data.dir, data.color, createBullet);
   newPlayer.id = this.id;
   this.broadcast.emit("new player", {
     id: newPlayer.id,
@@ -154,4 +159,28 @@ function createBullet(
 	bullets.push(new Bullet(x, y, dir, size, owner));
 }
 
+function update() {
+	for (var i = 0; i < players.length; i++) {
+		players[i].update(borders, resources);
+		if (!players[i].getAlive()) {
+			players.splice(i, 1);
+		}
+	}
+
+	for (var i = 0; i < bullets.length; i++) {
+		bullets[i].update(borders, null, players);
+		if (!bullets[i].getAlive()) {
+			bullets.splice(i, 1);
+		}
+	}
+
+	for (var i = 0; i < resources.length; i++) {
+		if (!resources[i].getAlive()) {
+			resources.splice(i, 1);
+		}
+	}
+};
+
 init();
+
+setInterval(update, 1000 / 60);

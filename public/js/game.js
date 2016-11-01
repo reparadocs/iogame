@@ -38,7 +38,7 @@ function init() {
 	var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
 		startY = Math.round(Math.random()*(Constants.gameHeight-5));
 
-	localPlayer = new Player(startX, startY, '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), createBullet);
+	localPlayer = new Player(startX, startY, [1,0], '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), createBullet);
 
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
@@ -106,7 +106,12 @@ function onResize(e) {
 
 function onSocketConnected() {
     console.log("Connected to socket server");
-    socket.emit("new player", {x: localPlayer.getX(), y: localPlayer.getY(), color: localPlayer.getColor()});
+    socket.emit("new player", {
+			x: localPlayer.getX(),
+			y: localPlayer.getY(),
+			dir: localPlayer.getDir(),
+			color: localPlayer.getColor()
+		});
 };
 
 function onSocketDisconnect() {
@@ -115,7 +120,7 @@ function onSocketDisconnect() {
 
 function onNewPlayer(data) {
   console.log("New player connected: "+data.id);
-  var newPlayer = new Player(data.x, data.y, data.color, createBullet);
+  var newPlayer = new Player(data.x, data.y, data.dir, data.color, createBullet);
   newPlayer.id = data.id;
   remotePlayers.push(newPlayer);
 };
