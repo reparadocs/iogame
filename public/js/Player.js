@@ -120,6 +120,17 @@ class Player extends GameObject {
 		serialized.score = this._score;
 		return serialized;
 	}
+
+	reset(color: ?string = null) {
+		this._x = Math.round(Math.random()*(Constants.gameWidth-40)) + 20;
+		this._y = Math.round(Math.random()*(Constants.gameHeight-40)) + 20;
+		this._bulletCount = 1;
+		this._alive = true;
+		this._score = 0;
+		this._move = [0,0];
+		this._color = color ? color : '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+		this._dir = [1,0];
+	}
 }
 
 exports.Player = Player;

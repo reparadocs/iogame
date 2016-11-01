@@ -169,7 +169,12 @@ function update() {
 	for (var i = 0; i < players.length; i++) {
 		players[i].update(borders, resources);
 		if (!players[i].getAlive()) {
-			players.splice(i, 1);
+      players[i].reset();
+      io.sockets.emit("death", {
+        id: players[i].id,
+        serialized: players[i].serialize(),
+        color: players[i].getColor(),
+      });
 		}
 	}
 

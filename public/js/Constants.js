@@ -23,9 +23,9 @@ var Constants: {
   playerSpeed: 3,
   playerSize: 10,
 
-  bulletSpeed: 5,
-  bulletMaxSize: 40,
-  bulletGrowthRate: 0.02,
+  bulletSpeed: 7,
+  bulletMaxSize: 90,
+  bulletGrowthRate: 0.01,
 
   resourceSize: 2,
   numResources: 100

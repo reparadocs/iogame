@@ -32,13 +32,8 @@ function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	// Calculate a random start position for the local player
-	// The minus 5 (half a player size) stops the player being
-	// placed right on the egde of the screen
-	var startX = Math.round(Math.random()*(Constants.gameWidth-20)) + 10,
-		startY = Math.round(Math.random()*(Constants.gameHeight-20)) + 10;
-
-	localPlayer = new Player(startX, startY, [1,0], '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), createBullet);
+	localPlayer = new Player(0, 0, [], '', createBullet);
+	localPlayer.reset();
 
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
@@ -82,6 +77,7 @@ var setEventHandlers = function() {
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
 	socket.on("update", onUpdateState);
+	socket.on("death", onDeath);
 };
 
 // Keyboard key down
@@ -132,8 +128,8 @@ function onMovePlayer(data) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
-	player.applyUpdate(data.serialized);
 	Commands.move(player, data.xMove, data.yMove);
+	player.applyUpdate(data.serialized);
 };
 
 function onRemovePlayer(data) {
@@ -154,8 +150,8 @@ function onChargeShot(data: Object) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
-	player.applyUpdate(data.serialized);
 	Commands.chargeShot(player, data.time);
+	player.applyUpdate(data.serialized);
 }
 
 function onShoot(data: Object) {
@@ -164,8 +160,8 @@ function onShoot(data: Object) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
-	player.applyUpdate(data.serialized);
 	Commands.shoot(player, data.time);
+	player.applyUpdate(data.serialized);
 }
 
 function onResourceSpawned(data: Object) {
@@ -175,6 +171,17 @@ function onResourceSpawned(data: Object) {
 
 function onUpdateState(data: Object) {
 	localPlayer.applyUpdate(data);
+}
+
+function onDeath(data: Object) {
+	var player = playerById(data.id);
+	if (!player) {
+			localPlayer.reset(data.color);
+			localPlayer.applyUpdate(data.serialized);
+			return;
+	};
+	player.reset(data.color);
+	player.applyUpdate(data.serialized);
 }
 
 function playerById(id: String) {
@@ -217,9 +224,6 @@ function update() {
 
 	for (var i = 0; i < remotePlayers.length; i++) {
 		remotePlayers[i].update(borders, resources);
-		if (!remotePlayers[i].getAlive()) {
-			remotePlayers.splice(i, 1);
-		}
 	}
 
 	for (var i = 0; i < bullets.length; i++) {
@@ -233,11 +237,6 @@ function update() {
 		if (!resources[i].getAlive()) {
 			resources.splice(i, 1);
 		}
-	}
-
-	if (!localPlayer.getAlive()) {
-		ready = false;
-		location.reload();
 	}
 };
 
