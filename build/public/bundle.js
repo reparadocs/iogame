@@ -4,69 +4,39 @@
 ** GAME Bullet CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var GameObject = require('./GameObject').GameObject;
 
-var Bullet = function (startX, startY, startDir, size) {
-  var x = startX,
-      y = startY,
-      dir = startDir,
-      size = size,
-      id;
+class Bullet extends GameObject {
 
-  var setX = function (newX) {
-    x = newX;
-  };
+  constructor(startX, startY, startDir, size) {
+    super(startX, startY, size, size, '#000');
+    this._dir = startDir;
+    this._size = size;
+  }
 
-  var setY = function (newY) {
-    y = newY;
-  };
+  getSize() {
+    return this._size;
+  }
 
-  var setDir = function (newDir) {
-    dir = newDir;
-  };
+  getDir() {
+    return this._dir;
+  }
 
-  var getX = function () {
-    return x;
-  };
+  update() {
+    this._x += this._dir[0] * Constants.bulletSpeed;
+    this._y += this._dir[1] * Constants.bulletSpeed;
+  }
 
-  var getY = function () {
-    return y;
-  };
-
-  var getDir = function () {
-    return dir;
-  };
-
-  var getSize = function () {
-    return size;
-  };
-
-  var update = function () {
-    x += dir[0] * Constants.bulletSpeed;
-    y += dir[1] * Constants.bulletSpeed;
-  };
-
-  var draw = function (ctx) {
-    ctx.fillStyle = '#000';
+  draw(ctx) {
+    super.draw(ctx);
     ctx.beginPath();
-    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.arc(this._x, this._y, this._size, 0, 2 * Math.PI);
     ctx.fill();
-  };
-
-  return {
-    update: update,
-    draw: draw,
-    setX: setX,
-    setY: setY,
-    setDir: setDir,
-    getX: getX,
-    getY: getY,
-    getDir: getDir,
-    getSize: getSize
-  };
+  }
 };
 
 exports.Bullet = Bullet;
-},{"./Constants":3}],2:[function(require,module,exports){
+},{"./Constants":3,"./GameObject":4}],2:[function(require,module,exports){
 
 /**************************************************
 ** Collisions Class
@@ -110,6 +80,7 @@ exports.Collisions = Collisions;
 var Constants = {
   gameHeight: 600,
   gameWidth: 1000,
+
   borderSize: 2,
 
   playerSpeed: 3,
@@ -127,6 +98,76 @@ var Constants = {
 
 exports.Constants = Constants;
 },{}],4:[function(require,module,exports){
+
+/**************************************************
+** GAME GameObject CLASS
+**************************************************/
+class GameObject {
+
+  constructor(startX, startY, width, height, color) {
+    this._x = startX;
+    this._y = startY;
+    this._height = height;
+    this._width = width;
+    this._color = color;
+  }
+
+  getX() {
+    return this._x;
+  }
+
+  getY() {
+    return this._y;
+  }
+
+  setX(newX) {
+    this._x = newX;
+  }
+
+  setY(newY) {
+    this._y = newY;
+  }
+
+  getHeight() {
+    return this._height;
+  }
+
+  getWidth() {
+    return this._width;
+  }
+
+  collision(otherObj, x, y) {
+    x = x || this._x;
+    y = y || this._y;
+    const diffX = Math.abs(x - otherObj.getX());
+    const diffY = Math.abs(y - otherObj.getY());
+    const distX = otherObj.getWidth() + this._width;
+    const distY = otherObj.getHeight() + this._height;
+    return diffX < distX && diffY < distY;
+  }
+
+  uncollide(otherObj) {
+    const diffX = Math.abs(this._x - otherObj.getX());
+    const diffY = Math.abs(this._y - otherObj.getY());
+    const distX = otherObj.getWidth() + this._width;
+    const distY = otherObj.getHeight() + this._height;
+    const intrusionX = diffX - distX;
+    const intrusionY = diffY - distY;
+    if (intrusionX > intrusionY) {
+      this._x = this._x > otherObj.getX() ? otherObj.getX() + distX : otherObj.getX() - distX;
+    } else {
+      this._y = this._y > otherObj.getY() ? otherObj.getY() + distY : otherObj.getY() - distY;
+    }
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = this._color;
+    ctx.fillRect(this._x - this._width / 2, this._y - this._height / 2, this._width, this._height);
+  }
+}
+
+exports.GameObject = GameObject;
+},{}],5:[function(require,module,exports){
 
 /**************************************************
 ** GAME KEYBOARD CLASS
@@ -203,180 +244,141 @@ var Keys = function () {
 };
 
 exports.Keys = Keys;
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
 var Collisions = require('./Collisions').Collisions();
+var GameObject = require('./GameObject').GameObject;
 
-var Player = function (startX, startY, color) {
-	var x = startX,
-	    y = startY,
-	    dir = [1, 0],
-	    color = color,
-	    isShooting = false,
-	    currentBulletSize = 0,
-	    id,
-	    currentBulletCount = 1;
+class Player extends GameObject {
 
-	var setCurrentBulletCount = function (newBulletCount) {
-		currentBulletCount = newBulletCount;
-	};
+	constructor(startX, startY, color) {
+		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
+		this._dir = [1, 0];
+		this._isShooting = false;
+		this._currentBulletSize = 0;
+		this._bulletCount = 1;
+	}
 
-	var getCurrentBulletCount = function () {
-		return currentBulletCount;
-	};
+	getBulletCount() {
+		return this._bulletCount;
+	}
 
-	var setX = function (newX) {
-		x = newX;
-	};
+	setBulletCount(newBulletCount) {
+		this._bulletCount = newBulletCount;
+	}
 
-	var setY = function (newY) {
-		y = newY;
-	};
+	getDir() {
+		return this._dir;
+	}
 
-	var setDir = function (newDir) {
-		dir = newDir;
-	};
+	setDir(dir) {
+		this._dir = dir;
+	}
 
-	var getX = function () {
-		return x;
-	};
+	getColor() {
+		return this._color;
+	}
 
-	var getY = function () {
-		return y;
-	};
+	update(keys, borders) {
+		var prevX = this._x,
+		    prevY = this._y;
 
-	var getDir = function () {
-		return dir;
-	};
-
-	var getColor = function () {
-		return color;
-	};
-
-	var update = function (keys) {
-		var prevX = x,
-		    prevY = y;
-
-		if (!keys.space && isShooting) {
-			isShooting = false;
+		if (!keys.space && this._isShooting) {
+			this._isShooting = false;
 			var rtn = {
 				command: "player shoots",
-				x: x,
-				y: y,
-				dir: dir,
-				size: currentBulletSize
+				x: this._x,
+				y: this._y,
+				dir: this._dir,
+				size: this._currentBulletSize
 			};
-			currentBulletSize = 0;
-			currentBulletCount = currentBulletCount - 1;
+			this._currentBulletSize = 0;
+			this._bulletCount = this._bulletCount - 1;
 			return rtn;
 		}
 
 		if (keys.space) {
-			if (currentBulletCount > 0) {
-				isShooting = true;
-				if (currentBulletSize < Constants.bulletMaxSize) {
-					currentBulletSize += Constants.bulletGrowthRate;
+			if (this._bulletCount > 0) {
+				this._isShooting = true;
+				if (this._currentBulletSize < Constants.bulletMaxSize) {
+					this._currentBulletSize += Constants.bulletGrowthRate;
 				}
 			}
 		} else {
 			if (keys.up) {
-				dir = [0, -1];
+				this._dir = [0, -1];
 			}
 			if (keys.down) {
-				dir = [0, 1];
+				this._dir = [0, 1];
 			};
 			if (keys.left) {
-				dir = [-1, 0];
+				this._dir = [-1, 0];
 			}
 			if (keys.right) {
-				dir = [1, 0];
+				this._dir = [1, 0];
 			};
-
-			if (!Collisions.hasHitBoundary(x, y, dir, Constants.playerSpeed, Constants.playerSize)) {
-				x = x + dir[0] * Constants.playerSpeed;
-				y = y + dir[1] * Constants.playerSpeed;
+			let borderCollision = false;
+			for (var i = 0; i < borders.length; i++) {
+				if (this.collision(borders[i], this._x + this._dir[0] * Constants.playerSpeed, this._y + this._dir[1] * Constants.playerSpeed)) {
+					borderCollision = true;
+					break;
+				}
+			}
+			if (!borderCollision) {
+				this._x = this._x + this._dir[0] * Constants.playerSpeed;
+				this._y = this._y + this._dir[1] * Constants.playerSpeed;
 			}
 
-			if (prevX != x || prevY != y) {
-				return { command: "move player", x: x, y: y, dir: dir };
+			if (prevX != this._x || prevY != this._y) {
+				return { command: "move player", x: this._x, y: this._y, dir: this._dir };
 			}
 		}
 
 		return null;
-	};
+	}
 
-	var draw = function (ctx) {
-		ctx.fillStyle = color;
+	draw(ctx) {
+		super.draw(ctx);
 		ctx.beginPath();
-		ctx.arc(x, y, Constants.playerSize, 0, 2 * Math.PI);
+		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2 * Math.PI);
 		ctx.fill();
-	};
-
-	return {
-		update: update,
-		draw: draw,
-		setX: setX,
-		setY: setY,
-		setDir: setDir,
-		getX: getX,
-		getY: getY,
-		getDir: getDir,
-		getColor: getColor,
-		setCurrentBulletCount: setCurrentBulletCount,
-		getCurrentBulletCount: getCurrentBulletCount,
-		id: id
-	};
-};
+	}
+}
 
 exports.Player = Player;
-},{"./Collisions":2,"./Constants":3}],6:[function(require,module,exports){
+},{"./Collisions":2,"./Constants":3,"./GameObject":4}],7:[function(require,module,exports){
 
 /**************************************************
 ** GAME Resouce CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var GameObject = require('./GameObject').GameObject;
 
-var Resource = function (startX, startY) {
-  var x = startX,
-      y = startY,
-      id;
+class Resource extends GameObject {
+  constructor(startX, startY) {
+    super(startX, startY, Constants.resourceSize, Constants.resourceSize, '#000');
+  }
 
-  var getX = function () {
-    return x;
-  };
-
-  var getY = function () {
-    return y;
-  };
-
-  var update = function () {};
-
-  var draw = function (ctx) {
-    ctx.fillStyle = '#000';
+  draw(ctx) {
+    super.draw(ctx);
     ctx.beginPath();
-    ctx.arc(x, y, Constants.resourceSize, 0, 2 * Math.PI);
+    ctx.arc(this._x, this._y, Constants.resourceSize, 0, 2 * Math.PI);
     ctx.fill();
-  };
-
-  return {
-    update: update,
-    draw: draw,
-    getX: getX,
-    getY: getY
-  };
-};
+  }
+}
 
 exports.Resource = Resource;
-},{"./Constants":3}],7:[function(require,module,exports){
+},{"./Constants":3,"./GameObject":4}],8:[function(require,module,exports){
 var Bullet = require('./Bullet').Bullet;
 var Constants = require('./Constants').Constants;
 var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
+var GameObject = require('./GameObject').GameObject;
 var Collisions = require('./Collisions').Collisions();
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
@@ -387,7 +389,8 @@ var canvas, // Canvas DOM element
 ctx, // Canvas rendering context
 keys, // Keyboard input
 localPlayer, // Local player
-remotePlayers, bullets, resources, socket;
+remotePlayers, // Remote players
+bullets, resources, borders, socket;
 
 /**************************************************
 ** GAME INITIALISATION
@@ -420,6 +423,7 @@ function init() {
 	remotePlayers = [];
 	bullets = [];
 	resources = [];
+	borders = [new GameObject(Constants.borderSize / 2, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'), new GameObject(Constants.gameWidth / 2, Constants.borderSize / 2, Constants.gameWidth, Constants.borderSize, '#000'), new GameObject(Constants.gameWidth, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'), new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize, '#000')];
 	ready = false;
 
 	// Start listening for events
@@ -489,7 +493,6 @@ function onMovePlayer(data) {
 		console.log("Player not found: " + data.id);
 		return;
 	};
-
 	movePlayer.setX(data.x);
 	movePlayer.setY(data.y);
 	movePlayer.setDir(data.dir);
@@ -552,7 +555,7 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	state = localPlayer.update(keys);
+	state = localPlayer.update(keys, borders);
 	if (state !== null) {
 		socket.emit(state.command, state);
 	};
@@ -562,29 +565,31 @@ function update() {
 		currentBullet.update();
 		for (var j = 0; j < remotePlayers.length; j++) {
 			currentPlayer = remotePlayers[j];
-			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize, currentBullet.getSize(), currentBullet.getSize())) {
+			if (currentBullet.collision(currentPlayer)) {
 				console.log("A player has been hit!");
 				remotePlayers.splice(j, 1);
 				bullets.splice(i, 1);
 			}
 		}
 
-		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize, currentBullet.getSize(), currentBullet.getSize())) {
+		if (currentBullet.collision(localPlayer)) {
 			console.log("You have been killed!");
 			ready = false;
 		}
 
-		if (Collisions.hasHitBoundary(currentBullet.getX(), currentBullet.getY(), currentBullet.getDir(), Constants.bulletSpeed, Constants.bulletSize)) {
-			bullets.splice(i, 1);
+		for (var j = 0; j < borders.length; j++) {
+			if (currentBullet.collision(borders[j])) {
+				bullets.splice(i, 1);
+			}
 		}
 	}
+
 	for (var i = 0; i < resources.length; i++) {
 		var currentResource = resources[i];
-		currentResource.update();
-		if (Collisions.hasCollided(localPlayer, currentResource, Constants.playerSize, Constants.playerSize, Constants.resourceSize, Constants.resourceSize)) {
+		if (currentResource.collision(localPlayer)) {
 			console.log("You have picked up a resource!");
 			resources.splice(i, 1);
-			localPlayer.setCurrentBulletCount(localPlayer.getCurrentBulletCount() + 1);
+			localPlayer.setBulletCount(localPlayer.getBulletCount() + 1);
 		}
 	}
 };
@@ -611,12 +616,15 @@ function draw() {
 	for (i = 0; i < resources.length; i++) {
 		resources[i].draw(ctx);
 	}
-
-	ctx.fillStyle = '#000';
-	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
-	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
+	for (i = 0; i < borders.length; i++) {
+		borders[i].draw(ctx);
+	}
+	/*
+ 	ctx.fillStyle = '#000';
+ 	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
+ 	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
+ 	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
+ 	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);*/
 };
 
 /**************************************************
@@ -638,7 +646,7 @@ function drawLoading() {
 
 init();
 animate();
-},{"./Bullet":1,"./Collisions":2,"./Constants":3,"./Keys":4,"./Player":5,"./Resource":6,"./requestAnimationFrame":8}],8:[function(require,module,exports){
+},{"./Bullet":1,"./Collisions":2,"./Constants":3,"./GameObject":4,"./Keys":5,"./Player":6,"./Resource":7,"./requestAnimationFrame":9}],9:[function(require,module,exports){
 // shim layer with setTimeout fallback
 window.requestAnimFrame = function () {
   return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function ( /* function */callback, /* DOMElement */element) {
@@ -647,4 +655,4 @@ window.requestAnimFrame = function () {
 }();
 
 exports.requestAnimFrame = window.requestAnimFrame;
-},{}]},{},[7]);
+},{}]},{},[8]);

@@ -3,6 +3,7 @@ var Constants = require('./Constants').Constants;
 var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
+var GameObject = require('./GameObject').GameObject;
 var Collisions = require('./Collisions').Collisions();
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
@@ -13,7 +14,8 @@ var canvas, // Canvas DOM element
 ctx, // Canvas rendering context
 keys, // Keyboard input
 localPlayer, // Local player
-remotePlayers, bullets, resources, socket;
+remotePlayers, // Remote players
+bullets, resources, borders, socket;
 
 /**************************************************
 ** GAME INITIALISATION
@@ -46,6 +48,7 @@ function init() {
 	remotePlayers = [];
 	bullets = [];
 	resources = [];
+	borders = [new GameObject(Constants.borderSize / 2, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'), new GameObject(Constants.gameWidth / 2, Constants.borderSize / 2, Constants.gameWidth, Constants.borderSize, '#000'), new GameObject(Constants.gameWidth, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'), new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize, '#000')];
 	ready = false;
 
 	// Start listening for events
@@ -115,7 +118,6 @@ function onMovePlayer(data) {
 		console.log("Player not found: " + data.id);
 		return;
 	};
-
 	movePlayer.setX(data.x);
 	movePlayer.setY(data.y);
 	movePlayer.setDir(data.dir);
@@ -178,7 +180,7 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	state = localPlayer.update(keys);
+	state = localPlayer.update(keys, borders);
 	if (state !== null) {
 		socket.emit(state.command, state);
 	};
@@ -188,29 +190,31 @@ function update() {
 		currentBullet.update();
 		for (var j = 0; j < remotePlayers.length; j++) {
 			currentPlayer = remotePlayers[j];
-			if (Collisions.hasCollided(currentPlayer, currentBullet, Constants.playerSize, Constants.playerSize, currentBullet.getSize(), currentBullet.getSize())) {
+			if (currentBullet.collision(currentPlayer)) {
 				console.log("A player has been hit!");
 				remotePlayers.splice(j, 1);
 				bullets.splice(i, 1);
 			}
 		}
 
-		if (Collisions.hasCollided(localPlayer, currentBullet, Constants.playerSize, Constants.playerSize, currentBullet.getSize(), currentBullet.getSize())) {
+		if (currentBullet.collision(localPlayer)) {
 			console.log("You have been killed!");
 			ready = false;
 		}
 
-		if (Collisions.hasHitBoundary(currentBullet.getX(), currentBullet.getY(), currentBullet.getDir(), Constants.bulletSpeed, Constants.bulletSize)) {
-			bullets.splice(i, 1);
+		for (var j = 0; j < borders.length; j++) {
+			if (currentBullet.collision(borders[j])) {
+				bullets.splice(i, 1);
+			}
 		}
 	}
+
 	for (var i = 0; i < resources.length; i++) {
 		var currentResource = resources[i];
-		currentResource.update();
-		if (Collisions.hasCollided(localPlayer, currentResource, Constants.playerSize, Constants.playerSize, Constants.resourceSize, Constants.resourceSize)) {
+		if (currentResource.collision(localPlayer)) {
 			console.log("You have picked up a resource!");
 			resources.splice(i, 1);
-			localPlayer.setCurrentBulletCount(localPlayer.getCurrentBulletCount() + 1);
+			localPlayer.setBulletCount(localPlayer.getBulletCount() + 1);
 		}
 	}
 };
@@ -237,12 +241,15 @@ function draw() {
 	for (i = 0; i < resources.length; i++) {
 		resources[i].draw(ctx);
 	}
-
-	ctx.fillStyle = '#000';
-	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
-	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
+	for (i = 0; i < borders.length; i++) {
+		borders[i].draw(ctx);
+	}
+	/*
+ 	ctx.fillStyle = '#000';
+ 	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
+ 	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
+ 	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
+ 	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);*/
 };
 
 /**************************************************

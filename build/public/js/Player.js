@@ -4,126 +4,102 @@
 **************************************************/
 var Constants = require('./Constants').Constants;
 var Collisions = require('./Collisions').Collisions();
+var GameObject = require('./GameObject').GameObject;
 
-var Player = function (startX, startY, color) {
-	var x = startX,
-	    y = startY,
-	    dir = [1, 0],
-	    color = color,
-	    isShooting = false,
-	    currentBulletSize = 0,
-	    id,
-	    currentBulletCount = 1;
+class Player extends GameObject {
 
-	var setCurrentBulletCount = function (newBulletCount) {
-		currentBulletCount = newBulletCount;
-	};
+	constructor(startX, startY, color) {
+		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
+		this._dir = [1, 0];
+		this._isShooting = false;
+		this._currentBulletSize = 0;
+		this._bulletCount = 1;
+	}
 
-	var getCurrentBulletCount = function () {
-		return currentBulletCount;
-	};
+	getBulletCount() {
+		return this._bulletCount;
+	}
 
-	var setX = function (newX) {
-		x = newX;
-	};
+	setBulletCount(newBulletCount) {
+		this._bulletCount = newBulletCount;
+	}
 
-	var setY = function (newY) {
-		y = newY;
-	};
+	getDir() {
+		return this._dir;
+	}
 
-	var setDir = function (newDir) {
-		dir = newDir;
-	};
+	setDir(dir) {
+		this._dir = dir;
+	}
 
-	var getX = function () {
-		return x;
-	};
+	getColor() {
+		return this._color;
+	}
 
-	var getY = function () {
-		return y;
-	};
+	update(keys, borders) {
+		var prevX = this._x,
+		    prevY = this._y;
 
-	var getDir = function () {
-		return dir;
-	};
-
-	var getColor = function () {
-		return color;
-	};
-
-	var update = function (keys) {
-		var prevX = x,
-		    prevY = y;
-
-		if (!keys.space && isShooting) {
-			isShooting = false;
+		if (!keys.space && this._isShooting) {
+			this._isShooting = false;
 			var rtn = {
 				command: "player shoots",
-				x: x,
-				y: y,
-				dir: dir,
-				size: currentBulletSize
+				x: this._x,
+				y: this._y,
+				dir: this._dir,
+				size: this._currentBulletSize
 			};
-			currentBulletSize = 0;
-			currentBulletCount = currentBulletCount - 1;
+			this._currentBulletSize = 0;
+			this._bulletCount = this._bulletCount - 1;
 			return rtn;
 		}
 
 		if (keys.space) {
-			if (currentBulletCount > 0) {
-				isShooting = true;
-				if (currentBulletSize < Constants.bulletMaxSize) {
-					currentBulletSize += Constants.bulletGrowthRate;
+			if (this._bulletCount > 0) {
+				this._isShooting = true;
+				if (this._currentBulletSize < Constants.bulletMaxSize) {
+					this._currentBulletSize += Constants.bulletGrowthRate;
 				}
 			}
 		} else {
 			if (keys.up) {
-				dir = [0, -1];
+				this._dir = [0, -1];
 			}
 			if (keys.down) {
-				dir = [0, 1];
+				this._dir = [0, 1];
 			};
 			if (keys.left) {
-				dir = [-1, 0];
+				this._dir = [-1, 0];
 			}
 			if (keys.right) {
-				dir = [1, 0];
+				this._dir = [1, 0];
 			};
-
-			if (!Collisions.hasHitBoundary(x, y, dir, Constants.playerSpeed, Constants.playerSize)) {
-				x = x + dir[0] * Constants.playerSpeed;
-				y = y + dir[1] * Constants.playerSpeed;
+			let borderCollision = false;
+			for (var i = 0; i < borders.length; i++) {
+				if (this.collision(borders[i], this._x + this._dir[0] * Constants.playerSpeed, this._y + this._dir[1] * Constants.playerSpeed)) {
+					borderCollision = true;
+					break;
+				}
+			}
+			if (!borderCollision) {
+				this._x = this._x + this._dir[0] * Constants.playerSpeed;
+				this._y = this._y + this._dir[1] * Constants.playerSpeed;
 			}
 
-			if (prevX != x || prevY != y) {
-				return { command: "move player", x: x, y: y, dir: dir };
+			if (prevX != this._x || prevY != this._y) {
+				return { command: "move player", x: this._x, y: this._y, dir: this._dir };
 			}
 		}
 
 		return null;
-	};
+	}
 
-	var draw = function (ctx) {
-		ctx.fillStyle = color;
+	draw(ctx) {
+		super.draw(ctx);
 		ctx.beginPath();
-		ctx.arc(x, y, Constants.playerSize, 0, 2 * Math.PI);
+		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2 * Math.PI);
 		ctx.fill();
-	};
-
-	return {
-		update: update,
-		draw: draw,
-		setX: setX,
-		setY: setY,
-		setDir: setDir,
-		getX: getX,
-		getY: getY,
-		getDir: getDir,
-		getColor: getColor,
-		setCurrentBulletCount: setCurrentBulletCount,
-		getCurrentBulletCount: getCurrentBulletCount,
-		id: id
-	};
-};
+	}
+}
 
 exports.Player = Player;

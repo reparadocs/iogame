@@ -3,35 +3,19 @@
 ** GAME Resouce CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var GameObject = require('./GameObject').GameObject;
 
-var Resource = function (startX, startY) {
-  var x = startX,
-      y = startY,
-      id;
+class Resource extends GameObject {
+  constructor(startX, startY) {
+    super(startX, startY, Constants.resourceSize, Constants.resourceSize, '#000');
+  }
 
-  var getX = function () {
-    return x;
-  };
-
-  var getY = function () {
-    return y;
-  };
-
-  var update = function () {};
-
-  var draw = function (ctx) {
-    ctx.fillStyle = '#000';
+  draw(ctx) {
+    super.draw(ctx);
     ctx.beginPath();
-    ctx.arc(x, y, Constants.resourceSize, 0, 2 * Math.PI);
+    ctx.arc(this._x, this._y, Constants.resourceSize, 0, 2 * Math.PI);
     ctx.fill();
-  };
-
-  return {
-    update: update,
-    draw: draw,
-    getX: getX,
-    getY: getY
-  };
-};
+  }
+}
 
 exports.Resource = Resource;

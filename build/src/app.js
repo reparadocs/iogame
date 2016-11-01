@@ -27,7 +27,7 @@ function init() {
   for (var i = 0; i < Constants.numResources; i++) {
     var startX = Math.round(Math.random() * (Constants.gameWidth - 5)),
         startY = Math.round(Math.random() * (Constants.gameHeight - 5));
-    var newResource = Resource(startX, startY);
+    var newResource = new Resource(startX, startY);
     resources.push(newResource);
   }
 

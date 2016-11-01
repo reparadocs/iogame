@@ -3,65 +3,35 @@
 ** GAME Bullet CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var GameObject = require('./GameObject').GameObject;
 
-var Bullet = function (startX, startY, startDir, size) {
-  var x = startX,
-      y = startY,
-      dir = startDir,
-      size = size,
-      id;
+class Bullet extends GameObject {
 
-  var setX = function (newX) {
-    x = newX;
-  };
+  constructor(startX, startY, startDir, size) {
+    super(startX, startY, size, size, '#000');
+    this._dir = startDir;
+    this._size = size;
+  }
 
-  var setY = function (newY) {
-    y = newY;
-  };
+  getSize() {
+    return this._size;
+  }
 
-  var setDir = function (newDir) {
-    dir = newDir;
-  };
+  getDir() {
+    return this._dir;
+  }
 
-  var getX = function () {
-    return x;
-  };
+  update() {
+    this._x += this._dir[0] * Constants.bulletSpeed;
+    this._y += this._dir[1] * Constants.bulletSpeed;
+  }
 
-  var getY = function () {
-    return y;
-  };
-
-  var getDir = function () {
-    return dir;
-  };
-
-  var getSize = function () {
-    return size;
-  };
-
-  var update = function () {
-    x += dir[0] * Constants.bulletSpeed;
-    y += dir[1] * Constants.bulletSpeed;
-  };
-
-  var draw = function (ctx) {
-    ctx.fillStyle = '#000';
+  draw(ctx) {
+    super.draw(ctx);
     ctx.beginPath();
-    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.arc(this._x, this._y, this._size, 0, 2 * Math.PI);
     ctx.fill();
-  };
-
-  return {
-    update: update,
-    draw: draw,
-    setX: setX,
-    setY: setY,
-    setDir: setDir,
-    getX: getX,
-    getY: getY,
-    getDir: getDir,
-    getSize: getSize
-  };
+  }
 };
 
 exports.Bullet = Bullet;

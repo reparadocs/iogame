@@ -19,6 +19,7 @@ var Constants: {
 } = {
   gameHeight: 600,
   gameWidth: 1000,
+  
   borderSize: 2,
 
   playerSpeed: 3,

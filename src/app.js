@@ -6,7 +6,6 @@ var util = require("util");
 var Player = require("../public/js/Player").Player;
 var Resource = require("../public/js/Resource").Resource;
 var Bullet = require("../public/js/Bullet").Bullet;
-var Collisions = require("../public/js/Collisions").Collisions;
 var Constants = require("../public/js/Constants").Constants;
 var io = require("socket.io")(server);
 
@@ -30,7 +29,7 @@ function init() {
   for (var i = 0; i < Constants.numResources; i++) {
     var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
     startY = Math.round(Math.random()*(Constants.gameHeight-5));
-    var newResource: Object = Resource(startX, startY);
+    var newResource: Object = new Resource(startX, startY);
     resources.push(newResource);
   }
 

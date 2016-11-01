@@ -3,7 +3,8 @@ var Constants = require('./Constants').Constants;
 var Player = require('./Player').Player;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
-var Collisions = require('./Collisions').Collisions();
+var GameObject = require('./GameObject').GameObject;
+var Commands = require('./Commands').Commands;
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
 
 /**************************************************
@@ -16,6 +17,7 @@ var canvas,			// Canvas DOM element
 	remotePlayers: Array<Object>, // Remote players
 	bullets: Array<Object>,
 	resources: Array<Object>,
+	borders: Array<Object>,
 	socket: Object;
 
 /**************************************************
@@ -30,9 +32,6 @@ function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	// Initialise keyboard controls
-	keys = new Keys();
-
 	// Calculate a random start position for the local player
 	// The minus 5 (half a player size) stops the player being
 	// placed right on the egde of the screen
@@ -46,9 +45,17 @@ function init() {
 	} else {
 		socket = io.connect("https://testiogame.herokuapp.com")
 	}
+
+	// Initialise keyboard controls
+	keys = new Keys(localPlayer, socket);
+
 	remotePlayers = [];
 	bullets = [];
 	resources = [];
+	borders = [new GameObject(Constants.borderSize / 2, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'),
+		new GameObject(Constants.gameWidth / 2, Constants.borderSize / 2, Constants.gameWidth, Constants.borderSize,  '#000'),
+		new GameObject(Constants.gameWidth, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight,  '#000'),
+		new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize,  '#000')];
 	ready = false;
 
 	// Start listening for events
@@ -69,8 +76,9 @@ var setEventHandlers = function() {
 	socket.on("connect", onSocketConnected);
 	socket.on("disconnect", onSocketDisconnect);
 	socket.on("new player", onNewPlayer);
-	socket.on("move player", onMovePlayer);
+	socket.on("change player direction", onChangePlayerDirection);
 	socket.on("remove player", onRemovePlayer);
+	socket.on("player charges shot", onChargeShot)
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
 };
@@ -112,17 +120,13 @@ function onNewPlayer(data) {
   remotePlayers.push(newPlayer);
 };
 
-function onMovePlayer(data) {
-	var movePlayer = playerById(data.id);
-
-	if (!movePlayer) {
-	    console.log("Player not found: "+data.id);
-	    return;
+function onChangePlayerDirection(data) {
+	var player = playerById(data.id);
+	if (!player) {
+			console.log("Player not found: "+data.id);
+			return;
 	};
-
-	movePlayer.setX(data.x);
-	movePlayer.setY(data.y);
-	movePlayer.setDir(data.dir);
+	Commands.changeDirection(player, data.xDir, data.yDir);
 };
 
 function onRemovePlayer(data) {
@@ -137,9 +141,22 @@ function onRemovePlayer(data) {
   remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
 };
 
+function onChargeShot(data: Object) {
+	var player = playerById(data.id);
+	if (!player) {
+			console.log("Player not found: "+data.id);
+			return;
+	};
+	Commands.chargeShot(player, data.time);
+}
+
 function onShoot(data: Object) {
-	var newBullet = new Bullet(data.x, data.y, data.dir, data.size);
-	bullets.push(newBullet);
+	var player = playerById(data.id);
+	if (!player) {
+			console.log("Player not found: "+data.id);
+			return;
+	};
+	Commands.shoot(player, data.time);
 }
 
 function onResourceSpawned(data: Object) {
@@ -185,7 +202,7 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	state = localPlayer.update(keys);
+	state = localPlayer.update(keys, borders);
 	if (state !== null) {
     socket.emit(state.command, state);
 	};
@@ -195,43 +212,31 @@ function update() {
 		currentBullet.update();
 		for (var j = 0; j < remotePlayers.length; j++) {
 			currentPlayer = remotePlayers[j];
-			if (Collisions.hasCollided(
-				currentPlayer,
-				currentBullet,
-				Constants.playerSize,
-				Constants.playerSize,
-				currentBullet.getSize(),
-				currentBullet.getSize()))
-				{
+			if (currentBullet.collision(currentPlayer)) {
 				console.log("A player has been hit!");
 				remotePlayers.splice(j, 1);
 				bullets.splice(i, 1);
 			}
 		}
 
-		if (Collisions.hasCollided(
-			localPlayer,
-			currentBullet,
-			Constants.playerSize,
-			Constants.playerSize,
-			currentBullet.getSize(),
-			currentBullet.getSize()))
-			{
+		if (currentBullet.collision(localPlayer)) {
 			console.log("You have been killed!");
 			ready = false;
 		}
 
-		 if (Collisions.hasHitBoundary(currentBullet.getX(), currentBullet.getY(), currentBullet.getDir(), Constants.bulletSpeed, Constants.bulletSize)) {
-		 	bullets.splice(i, 1);
-		 }
+		for (var j = 0; j < borders.length; j++) {
+			if (currentBullet.collision(borders[j])) {
+				bullets.splice(i, 1);
+			}
+		}
 	}
+
 	for (var i = 0; i < resources.length; i++) {
 		var currentResource = resources[i];
-		currentResource.update();
-		if (Collisions.hasCollided(localPlayer, currentResource, Constants.playerSize, Constants.playerSize, Constants.resourceSize, Constants.resourceSize)) {
+		if (currentResource.collision(localPlayer)) {
 			console.log("You have picked up a resource!");
 			resources.splice(i, 1);
-			localPlayer.setCurrentBulletCount(localPlayer.getCurrentBulletCount() + 1);
+			localPlayer.setBulletCount(localPlayer.getBulletCount() + 1);
 		}
 	}
 };
@@ -259,12 +264,9 @@ function draw() {
 	for (i = 0; i < resources.length; i++) {
 		resources[i].draw(ctx);
 	}
-
-	ctx.fillStyle = '#000';
-	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
-	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
+	for (i = 0; i < borders.length; i++) {
+		borders[i].draw(ctx);
+	}
 };
 
 /**************************************************
