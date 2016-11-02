@@ -63,10 +63,13 @@ class Player extends GameObject {
 		if (this._chargeTime !== 0 && this._bulletCount > 0) {
 			const charged = time - this._chargeTime;
 			this._bulletCount -= 1;
-			const size =
+			let size =
 				charged * Constants.bulletGrowthRate > Constants.bulletMaxSize
 				? Constants.bulletMaxSize
 				: charged * Constants.bulletGrowthRate;
+			if (size < 1) {
+				size = 1;
+			}
 			this._createBullet(this._x, this._y, this._dir, size, this);
 		}
 		this._chargeTime = 0;
