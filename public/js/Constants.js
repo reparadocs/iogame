@@ -21,7 +21,7 @@ var Constants: {
   borderSize: 2,
 
   playerSpeed: 3,
-  playerSize: 10,
+  playerSize: 15,
 
   bulletSpeed: 7,
   bulletMaxSize: 90,

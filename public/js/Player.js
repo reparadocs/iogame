@@ -104,6 +104,22 @@ class Player extends GameObject {
 		ctx.beginPath();
 		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2*Math.PI);
 		ctx.fill();
+		ctx.fillStyle = '#000';
+		if (this._chargeTime !== 0) {
+			ctx.beginPath();
+			const charged = Date.now() - this._chargeTime;
+			const size =
+				charged * Constants.bulletGrowthRate > Constants.bulletMaxSize
+				? Constants.bulletMaxSize
+				: charged * Constants.bulletGrowthRate;
+			ctx.arc(this._x, this._y, size, 0, 2*Math.PI);
+			ctx.moveTo(this._x + (size * this._dir[0]), this._y + (size * this._dir[1]));
+			ctx.lineTo(this._x + ((size - 5) * this._dir[0]), this._y + ((size - 5) * this._dir[1]));
+			ctx.stroke();
+		}
+
+		ctx.font = "12px serif";
+		ctx.fillText(this._bulletCount, this._x - 5, this._y + 5);
 	}
 
 	applyUpdate(data: Object) {
