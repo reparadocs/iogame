@@ -111,10 +111,13 @@ class Player extends GameObject {
 		if (this._chargeTime !== 0) {
 			ctx.beginPath();
 			const charged = Date.now() - this._chargeTime;
-			const size =
+			let size =
 				charged * Constants.bulletGrowthRate > Constants.bulletMaxSize
 				? Constants.bulletMaxSize
 				: charged * Constants.bulletGrowthRate;
+			if (size < 1) {
+				size = 1;
+			}
 			ctx.arc(this._x, this._y, size, 0, 2*Math.PI);
 			ctx.moveTo(this._x + (size * this._dir[0]), this._y + (size * this._dir[1]));
 			ctx.lineTo(this._x + ((size - 5) * this._dir[0]), this._y + ((size - 5) * this._dir[1]));
