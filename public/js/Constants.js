@@ -28,7 +28,8 @@ var Constants: {
   bulletGrowthRate: 0.01,
 
   resourceSize: 2,
-  numResources: 100
+  numResources: 100,
+  resourceSpawnRate: 60,
 };
 
 exports.Constants = Constants;

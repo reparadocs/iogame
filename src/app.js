@@ -21,9 +21,11 @@ app.get('/', function (req, res) {
 var socket: Object,
     players: Array<Object>,
     bullets: Array<Object>,
-    resources: Array<Object>;
+    resources: Array<Object>,
+    resourceCounter: number;
 
 function init() {
+  resourceCounter = 0;
   players = [];
   bullets = [];
   resources = [];
@@ -190,6 +192,19 @@ function update() {
 			resources.splice(i, 1);
 		}
 	}
+
+  resourceCounter += 1;
+  if (resourceCounter > Constants.resourceSpawnRate) {
+    resourceCounter = 0;
+    var startX = Math.round(Math.random()*(Constants.gameWidth-5)),
+    startY = Math.round(Math.random()*(Constants.gameHeight-5));
+    var newResource: Object = new Resource(startX, startY);
+    resources.push(newResource);
+    io.sockets.emit("resource spawned", {
+      x: newResource.getX(),
+      y: newResource.getY()
+    });
+  }
 };
 
 init();
