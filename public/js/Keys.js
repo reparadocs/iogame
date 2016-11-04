@@ -9,19 +9,17 @@ class Keys {
 	_socket: Object;
 
 	_space: boolean;
-	_left: boolean;
-	_right: boolean;
-	_up: boolean;
-	_down: boolean;
+	_mouseX: number;
+	_mouseY: number;
+	_dir: ?Array<number>;
 
 	constructor(localPlayer: Object, socket: Object) {
 		this._localPlayer = localPlayer;
 		this._socket = socket;
 		this._space = false;
-		this._left = false;
-		this._right = false;
-		this._up = false;
-		this._down = false;
+		this._dir = null;
+		this._mouseX = 0;
+		this._mouseY = 0;
 	}
 
 	onKeyDown(e: Object) {
@@ -33,18 +31,6 @@ class Keys {
 					Commands.chargeShot(this._localPlayer, Date.now(), this._socket);
 				}
 				break;
-			case 37: // Left
-				this._left = true;
-				break;
-			case 38: // Up
-				this._up = true;
-				break;
-			case 39: // Right
-				this._right = true;
-				break;
-			case 40: // Down
-				this._down = true;
-				break;
 		};
 	}
 
@@ -55,31 +41,31 @@ class Keys {
 				this._space = false;
 				Commands.shoot(this._localPlayer, Date.now(), this._socket);
 				break;
-			case 37: // Left
-				this._left = false;
-				break;
-			case 38: // Up
-				this._up = false;
-				break;
-			case 39: // Right
-				this._right = false;
-				break;
-			case 40: // Down
-				this._down = false;
-				break;
-
 		};
 	}
 
+	onMouseMove(e: Object) {
+		this._mouseX = e.clientX;
+		this._mouseY = e.clientY;
+		const diffX = this._mouseX - this._localPlayer.getX();
+		const diffY = this._mouseY - this._localPlayer.getY();
+		const length = Math.sqrt(diffX * diffX + diffY * diffY);
+		const vector = [diffX / length, diffY / length];
+		this._dir = vector;
+	}
+
+	isPlayerOnMouse() {
+		return Math.abs(this._localPlayer.getX() - this._mouseX) < 15 && Math.abs(this._localPlayer.getY() - this._mouseY) < 15;
+	}
+
 	update() {
-		if (this._up) {
-			Commands.move(this._localPlayer, 0, -1, this._socket);
-		} else if (this._down) {
-			Commands.move(this._localPlayer, 0, 1, this._socket);
-		} else if (this._right) {
-			Commands.move(this._localPlayer, 1, 0, this._socket);
-		} else if (this._left) {
-			Commands.move(this._localPlayer, -1, 0, this._socket);
+		if (this.isPlayerOnMouse()) {
+			Commands.changeDir(this._localPlayer, 0, 0, this._socket);
+		}
+
+		if (this._dir) {
+			Commands.changeDir(this._localPlayer, this._dir[0], this._dir[1], this._socket);
+			this._dir = null;
 		}
 	}
 }

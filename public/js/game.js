@@ -65,13 +65,14 @@ var setEventHandlers = function() {
 	// Keyboard
 	window.addEventListener("keydown", onKeydown, false);
 	window.addEventListener("keyup", onKeyup, false);
+	window.addEventListener("mousemove", onMouseMove, false);
 
 	// Window resize
 	window.addEventListener("resize", onResize, false);
 	socket.on("connect", onSocketConnected);
 	socket.on("disconnect", onSocketDisconnect);
 	socket.on("new player", onNewPlayer);
-	socket.on("move player", onMovePlayer);
+	socket.on("change player direction", onChangePlayerDirection);
 	socket.on("remove player", onRemovePlayer);
 	socket.on("player charges shot", onChargeShot)
 	socket.on("player shoots", onShoot);
@@ -93,6 +94,12 @@ function onKeyup(e) {
 		keys.onKeyUp(e);
 	};
 };
+
+function onMouseMove(e) {
+	if (localPlayer) {
+		keys.onMouseMove(e);
+	}
+}
 
 // Browser window resize
 function onResize(e) {
@@ -123,15 +130,15 @@ function onNewPlayer(data) {
   remotePlayers.push(newPlayer);
 };
 
-function onMovePlayer(data) {
+function onChangePlayerDirection(data) {
 	var player = playerById(data.id);
 	if (!player) {
 			console.log("Player not found: "+data.id);
 			return;
 	};
-	Commands.move(player, data.xMove, data.yMove);
+	Commands.changeDir(player, data.xDir, data.yDir);
 	player.applyUpdate(data.serialized);
-};
+}
 
 function onRemovePlayer(data) {
 	console.log("player disconnect");

@@ -11,17 +11,17 @@ class Player extends GameObject {
 	_bulletCount: number;
 	_chargeTime: number;
 	_score: number;
-	_move: Array<number>;
+	_shootDir: Array<number>;
 	_createBullet: Function;
 
 	constructor(startX: number, startY: number, dir: Array<number>, color: string, createBullet: Function) {
 		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
 		this._dir = dir;
+		this._shootDir = dir;
 		this._bulletCount = 1;
 		this._chargeTime = 0;
 		this._createBullet = createBullet;
 		this._score = 0;
-		this._move = [0,0];
 	}
 
 	getBulletCount() {
@@ -40,9 +40,11 @@ class Player extends GameObject {
 		this._score = score;
 	}
 
-	setMove(move: Array<number>) {
-		this._move = move;
-		this._dir = move;
+	setDir(dir: Array<number>) {
+		this._dir = dir;
+		if (dir[0] !== 0 || dir[1] !== 0) {
+			this._shootDir = dir;
+		}
 	}
 
 	getDir() {
@@ -70,7 +72,7 @@ class Player extends GameObject {
 			if (size < 1) {
 				size = 1;
 			}
-			this._createBullet(this._x, this._y, this._dir, size, this);
+			this._createBullet(this._x, this._y, this._shootDir, size, this);
 		}
 		this._chargeTime = 0;
 	}
@@ -80,8 +82,8 @@ class Player extends GameObject {
 		for (var i = 0; i < borders.length; i++) {
 			if (this.collision(
 				borders[i],
-				this._x + this._move[0] * Constants.playerSpeed,
-				this._y + this._move[1] * Constants.playerSpeed,
+				this._x + this._dir[0] * Constants.playerSpeed,
+				this._y + this._dir[1] * Constants.playerSpeed,
 			)) {
 				borderCollision = true;
 				break;
@@ -89,8 +91,8 @@ class Player extends GameObject {
 		}
 
 		if (!borderCollision && this._chargeTime === 0) {
-			this._x += this._move[0] * Constants.playerSpeed;
-			this._y += this._move[1] * Constants.playerSpeed;
+			this._x += this._dir[0] * Constants.playerSpeed;
+			this._y += this._dir[1] * Constants.playerSpeed;
 
 			for (var i = 0; i < resources.length; i++) {
 				if (this.collision(resources[i])) {
@@ -99,7 +101,6 @@ class Player extends GameObject {
 				}
 			}
 		}
-		this._move = [0,0];
 	}
 
 	draw(ctx: Object) {
@@ -119,8 +120,8 @@ class Player extends GameObject {
 				size = 1;
 			}
 			ctx.arc(this._x, this._y, size, 0, 2*Math.PI);
-			ctx.moveTo(this._x + (size * this._dir[0]), this._y + (size * this._dir[1]));
-			ctx.lineTo(this._x + ((size - 5) * this._dir[0]), this._y + ((size - 5) * this._dir[1]));
+			ctx.moveTo(this._x + (size * this._shootDir[0]), this._y + (size * this._shootDir[1]));
+			ctx.lineTo(this._x + ((size - 5) * this._shootDir[0]), this._y + ((size - 5) * this._shootDir[1]));
 			ctx.stroke();
 		}
 
@@ -131,6 +132,9 @@ class Player extends GameObject {
 	applyUpdate(data: Object) {
 		super.applyUpdate(data);
 		this._dir = data.dir;
+		if (data.dir[0] !== 0 || data.dir[1] !== 0) {
+			this._shootDir = data.dir;
+		}
 		this._bulletCount = data.bulletCount;
 		this._score = data.score;
 	}
@@ -149,9 +153,9 @@ class Player extends GameObject {
 		this._bulletCount = 1;
 		this._alive = true;
 		this._score = 0;
-		this._move = [0,0];
 		this._color = color ? color : '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
 		this._dir = [1,0];
+		this._shootDir = this._dir;
 	}
 }
 
