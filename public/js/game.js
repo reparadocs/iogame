@@ -1,6 +1,6 @@
 var Bullet = require('./Bullet').Bullet;
 var Constants = require('./Constants').Constants;
-var Player = require('./Player').Player;
+var Player = require('./ClientPlayer').ClientPlayer;
 var Resource = require('./Resource').Resource;
 var Keys = require('./Keys').Keys;
 var GameObject = require('./GameObject').GameObject;
@@ -18,7 +18,9 @@ var canvas,			// Canvas DOM element
 	bullets: Array<Object>,
 	resources: Array<Object>,
 	borders: Array<Object>,
-	socket: Object;
+	socket: Object,
+	lastTime: number,
+	frame: number;
 
 /**************************************************
 ** GAME INITIALISATION
@@ -55,6 +57,8 @@ function init() {
 
 	// Start listening for events
 	setEventHandlers();
+	lastTime = Date.now();
+	frame = 0;
 };
 
 
@@ -78,7 +82,6 @@ var setEventHandlers = function() {
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
 	socket.on("update", onUpdateState);
-	socket.on("update all", onUpdateAll);
 	socket.on("death", onDeath);
 };
 
@@ -134,11 +137,15 @@ function onNewPlayer(data) {
 function onChangePlayerDirection(data) {
 	var player = playerById(data.id);
 	if (!player) {
-			console.log("Player not found: "+data.id);
+		if (localPlayer.id === data.id) {
+			player = localPlayer;
+		} else {
+			console.log("Player not found: "+data.id)
 			return;
+		}
 	};
 	Commands.changeDir(player, data.xDir, data.yDir);
-	player.applyUpdate(data.serialized);
+	player.synchronize(data);
 }
 
 function onRemovePlayer(data) {
@@ -160,7 +167,7 @@ function onChargeShot(data: Object) {
 			return;
 	};
 	Commands.chargeShot(player, data.time);
-	player.applyUpdate(data.serialized);
+	player.synchronize(data);
 }
 
 function onShoot(data: Object) {
@@ -170,16 +177,12 @@ function onShoot(data: Object) {
 			return;
 	};
 	Commands.shoot(player, data.time);
-	player.applyUpdate(data.serialized);
+	player.synchronize(data);
 }
 
 function onResourceSpawned(data: Object) {
 	var newResource = new Resource(data.x, data.y);
 	resources.push(newResource);
-}
-
-function onUpdateState(data: Object) {
-	localPlayer.applyUpdate(data);
 }
 
 function onDeath(data: Object) {
@@ -193,10 +196,10 @@ function onDeath(data: Object) {
 			}
 	};
 	player.reset(data.color);
-	player.applyUpdate(data.serialized);
+	player.synchronize(data);
 }
 
-function onUpdateAll(data: Object) {
+function onUpdateState(data: Object) {
 	var player = playerById(data.id);
 	if (!player) {
 			if (localPlayer.id === data.id) {
@@ -206,7 +209,7 @@ function onUpdateAll(data: Object) {
 				return;
 			}
 	};
-	player.applyUpdate(data.serialized);
+	player.synchronize(data);
 }
 
 function playerById(id: String) {
@@ -232,9 +235,13 @@ function createBullet(
 ** GAME ANIMATION LOOP
 **************************************************/
 function animate() {
-	update();
-	draw();
-
+	var framesToRun = Math.floor((Date.now() - lastTime) / (1000 / 60));
+	for (var i = 0; i < framesToRun; i++) {
+		frame += 1;
+		update();
+		draw();
+	}
+	lastTime += framesToRun * (1000 / 60);
 	// Request a new animation frame using Paul Irish's shim
 	window.requestAnimFrame(animate);
 };
@@ -245,10 +252,10 @@ function animate() {
 **************************************************/
 function update() {
 	keys.update();
-	//localPlayer.update(borders, resources);
+	localPlayer.update(borders, resources);
 
 	for (var i = 0; i < remotePlayers.length; i++) {
-		//remotePlayers[i].update(borders, resources);
+		remotePlayers[i].update(borders, resources);
 	}
 
 	for (var i = 0; i < bullets.length; i++) {

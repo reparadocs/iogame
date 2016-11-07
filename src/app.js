@@ -22,7 +22,9 @@ var socket: Object,
     players: Array<Object>,
     bullets: Array<Object>,
     resources: Array<Object>,
-    resourceCounter: number;
+    resourceCounter: number,
+    lastTime: number,
+    frame: number;
 
 function init() {
   resourceCounter = 0;
@@ -42,6 +44,8 @@ function init() {
   }
 
   setEventHandlers();
+  lastTime = Date.now();
+  frame = 0;
 };
 
 var setEventHandlers = function() {
@@ -108,11 +112,9 @@ function onChangePlayerDirection(data) {
 			return;
 	};
 	Commands.changeDir(player, data.xDir, data.yDir);
-  this.emit("update", player.serialize());
-  this.broadcast.emit("change player direction", {
+  io.sockets.emit("update", {
     id: player.id,
-    xDir: data.xDir,
-    yDir: data.yDir,
+    frame: frame,
     serialized: player.serialize(),
   });
 };
@@ -124,9 +126,9 @@ function onChargeShot(data: Object) {
 			return;
 	};
 	Commands.chargeShot(player, data.time);
-  this.emit("update", player.serialize());
   this.broadcast.emit("player charges shot", {
     id: player.id,
+    frame: frame,
     time: data.time,
     serialized: player.serialize(),
   });
@@ -139,9 +141,9 @@ function onShoot(data: Object) {
 			return;
 	};
 	Commands.shoot(player, data.time);
-  this.emit("update", player.serialize());
   this.broadcast.emit("player shoots", {
     id: player.id,
+    frame: frame,
     time: data.time,
     serialized: player.serialize(),
   });
@@ -174,15 +176,17 @@ function update() {
       players[i].reset();
       io.sockets.emit("death", {
         id: players[i].id,
+        frame: frame,
         serialized: players[i].serialize(),
         color: players[i].getColor(),
       });
-		} else {
-      io.sockets.emit("update all", {
+		} /*else {
+      io.sockets.emit("update", {
         id: players[i].id,
+        frame: frame,
         serialized: players[i].serialize()
       });
-    }
+    }*/
 	}
 
 	for (var i = 0; i < bullets.length; i++) {
@@ -212,6 +216,15 @@ function update() {
   }
 };
 
+function loop() {
+  var framesToRun = Math.floor((Date.now() - lastTime) / (1000 / 60));
+  for (var i = 0; i < framesToRun; i++) {
+    frame += 1;
+    update();
+  }
+  lastTime += framesToRun * (1000 / 60);
+}
+
 init();
 
-setInterval(update, 1000 / 60);
+setInterval(loop, 1000 / 60);
