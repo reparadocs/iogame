@@ -177,7 +177,12 @@ function update() {
         serialized: players[i].serialize(),
         color: players[i].getColor(),
       });
-		}
+		} else {
+      io.sockets.emit("update all", {
+        id: players[i].id,
+        serialized: players[i].serialize()
+      });
+    }
 	}
 
 	for (var i = 0; i < bullets.length; i++) {

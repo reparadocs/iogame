@@ -78,6 +78,7 @@ var setEventHandlers = function() {
 	socket.on("player shoots", onShoot);
 	socket.on("resource spawned", onResourceSpawned);
 	socket.on("update", onUpdateState);
+	socket.on("update all", onUpdateAll);
 	socket.on("death", onDeath);
 };
 
@@ -195,6 +196,19 @@ function onDeath(data: Object) {
 	player.applyUpdate(data.serialized);
 }
 
+function onUpdateAll(data: Object) {
+	var player = playerById(data.id);
+	if (!player) {
+			if (localPlayer.id === data.id) {
+				player = localPlayer;
+			} else {
+				console.log("Player not found: "+data.id)
+				return;
+			}
+	};
+	player.applyUpdate(data.serialized);
+}
+
 function playerById(id: String) {
   var i;
   for (i = 0; i < remotePlayers.length; i++) {
@@ -231,10 +245,10 @@ function animate() {
 **************************************************/
 function update() {
 	keys.update();
-	localPlayer.update(borders, resources);
+	//localPlayer.update(borders, resources);
 
 	for (var i = 0; i < remotePlayers.length; i++) {
-		remotePlayers[i].update(borders, resources);
+		//remotePlayers[i].update(borders, resources);
 	}
 
 	for (var i = 0; i < bullets.length; i++) {
