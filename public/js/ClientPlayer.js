@@ -15,7 +15,6 @@ class ClientPlayer extends Player {
   }
 
   update(borders: Array<Object>) {
-    console.log("Here");
     this._borders = borders;
     super.update(borders);
     this._history.push(this.hash(this.serialize()));
@@ -63,9 +62,16 @@ class ClientPlayer extends Player {
       // We are not in sync, fuck
       this.applyUpdate(data.serialized);
       const frameDiff = this._history.length + this._offset - data.frame;
-      for (var i = 0; i < frameDiff; i++) {
-        // Fastforward to get current state
-        //this.update(this._borders);
+      if (frameDiff > 20) {
+        this._history = [this.hash(data.serialized),];
+        this._offset = data.frame;
+      } else {
+        for (var i = 0; i < frameDiff; i++) {
+          // Fastforward to get current state
+          this.update(this._borders);
+        }
+        this._history = this._history.slice(data.frame - this._offset + 1);
+        this._offset = data.frame;
       }
     }
   }

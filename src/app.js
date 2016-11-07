@@ -180,13 +180,14 @@ function update() {
         serialized: players[i].serialize(),
         color: players[i].getColor(),
       });
-		} /*else {
+		} else if (frame % 60 === 0) {
+      util.log("sent");
       io.sockets.emit("update", {
         id: players[i].id,
         frame: frame,
         serialized: players[i].serialize()
       });
-    }*/
+    }
 	}
 
 	for (var i = 0; i < bullets.length; i++) {
