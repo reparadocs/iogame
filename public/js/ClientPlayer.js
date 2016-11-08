@@ -53,9 +53,11 @@ class ClientPlayer extends Player {
       // We are not in sync, fuck
       this.applyUpdate(data.serialized);
       const frameDiff = this._history.length + this._offset - data.frame;
-      console.log(frameDiff);
-      console.log(this.serialize());
-      console.log(data.serialized);
+      if (this.hash(this.serialize()) !== data.serialized) {
+        console.log(frameDiff);
+        console.log(this.serialize());
+        console.log(data.serialized);
+      }
       if (frameDiff > 20) {
         this._history = [this.hash(data.serialized),];
         this._offset = data.frame;
