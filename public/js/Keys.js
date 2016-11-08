@@ -59,7 +59,7 @@ class Keys {
 	}
 
 	update() {
-		if (this.isPlayerOnMouse() && this._localPlayer.getDir() !== [0,0]) {
+		if (this.isPlayerOnMouse() && (this._localPlayer.getDir()[0] !== 0 || this._localPlayer.getDir()[1] !== 0)) {
 			Commands.changeDir(this._localPlayer, 0, 0, this._socket);
 		}
 
