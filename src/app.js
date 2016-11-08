@@ -181,7 +181,6 @@ function update() {
         color: players[i].getColor(),
       });
 		} else if (frame % 60 === 0) {
-      util.log("sent");
       io.sockets.emit("update", {
         id: players[i].id,
         frame: frame,

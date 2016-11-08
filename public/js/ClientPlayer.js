@@ -50,18 +50,12 @@ class ClientPlayer extends Player {
       this._offset = data.frame;
       return;
     } else {
-      console.log(data.frame);
-      console.log(this._offset);
-      console.log(serverFrameState);
-      console.log(clientFrameState);
-      console.log(data.frame - this._offset);
-      console.log(this._history[data.frame - this._offset]);
-      console.log(this.hash(this.serialize()));
-      console.log(this._history);
-      console.log("not in sync");
       // We are not in sync, fuck
       this.applyUpdate(data.serialized);
       const frameDiff = this._history.length + this._offset - data.frame;
+      console.log(frameDiff);
+      console.log(this.serialize());
+      console.log(data.serialized);
       if (frameDiff > 20) {
         this._history = [this.hash(data.serialized),];
         this._offset = data.frame;
