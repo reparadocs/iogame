@@ -52,11 +52,6 @@ class ClientPlayer extends Player {
       return;
     } else {
       // We are not in sync, fuck
-      if (this.hash(this.serialize()) !== this.hash(data.serialized)) {
-        console.log(this._history.length + this._offset - data.frame);
-        console.log(this.serialize());
-        console.log(data.serialized);
-      }
       this.applyUpdate(data.serialized);
       const frameDiff = this._history.length + this._offset - data.frame;
       if (frameDiff > 20) {
