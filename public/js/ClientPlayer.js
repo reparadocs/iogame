@@ -68,7 +68,7 @@ class ClientPlayer extends Player {
       } else {
         for (var i = 0; i < frameDiff; i++) {
           // Fastforward to get current state
-          this.update(this._borders);
+          //this.update(this._borders);
         }
         this._history = this._history.slice(data.frame - this._offset + 1);
         this._offset = data.frame;
