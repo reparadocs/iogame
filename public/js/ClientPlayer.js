@@ -33,10 +33,12 @@ class ClientPlayer extends Player {
 
   synchronize(data: Object) {
     if (data.frame < this._offset) {
+      console.log("Already processed");
       // We already know we are in sync for this frame
       return;
     }
     if (this._history.length + this._offset <= data.frame) {
+      console.log("Not processed yet");
       // We haven't processed this frame yet
       this._history = [this.hash(data.serialized),];
       this._offset = data.frame;
@@ -45,6 +47,7 @@ class ClientPlayer extends Player {
     const serverFrameState = this.hash(data.serialized);
     const clientFrameState = this._history[data.frame - this._offset];
     if (serverFrameState === clientFrameState) {
+      console.log("In sync");
       // We are in sync for this frame
       this._history = this._history.slice(data.frame - this._offset + 1);
       this._offset = data.frame;
@@ -64,7 +67,7 @@ class ClientPlayer extends Player {
       } else {
         for (var i = 0; i < frameDiff; i++) {
           // Fastforward to get current state
-          //this.update(this._borders);
+          this.update(this._borders);
         }
         this._history = this._history.slice(data.frame - this._offset + 1);
         this._offset = data.frame;
