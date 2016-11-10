@@ -15,10 +15,10 @@ var Constants: {
   resourceSize: number,
   numResources: number
 } = {
-  gameHeight: 500,
-  gameWidth: 900,
+  gameHeight: 600,
+  gameWidth: 1000,
 
-  borderSize: 5,
+  borderSize: 2,
 
   playerSpeed: 3,
   playerSize: 15,
