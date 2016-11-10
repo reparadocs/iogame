@@ -3,6 +3,7 @@
 ** GAME Bullet CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var Globals = require('./Globals').Globals;
 var GameObject = require('./GameObject').GameObject;
 
 class Bullet extends GameObject {
@@ -55,7 +56,9 @@ class Bullet extends GameObject {
       }
     }
 
-    if (localPlayer && localPlayer.id != this._owner.id && this.collision(localPlayer)) {
+    if (
+      localPlayer && localPlayer.id != this._owner.id && this.collision(localPlayer)
+    ) {
       this._alive = false;
       localPlayer.setAlive(false);
       this._owner.setScore(this._owner.getScore() + 1);
@@ -65,7 +68,11 @@ class Bullet extends GameObject {
   draw(ctx: Object) {
     ctx.fillStyle = this._color;
     ctx.beginPath();
-    ctx.arc(this._x, this._y, this._size, 0, 2*Math.PI);
+    ctx.arc(
+      this._x * Globals.widthRatio,
+      this._y * Globals.heightRatio,
+      this._size * Globals.widthRatio,
+      0, 2*Math.PI);
     ctx.fill();
   }
 };

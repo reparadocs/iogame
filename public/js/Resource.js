@@ -3,6 +3,7 @@
 ** GAME Resouce CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
+var Globals = require('./Globals').Globals;
 var GameObject = require('./GameObject').GameObject;
 
 class Resource extends GameObject {
@@ -19,7 +20,11 @@ class Resource extends GameObject {
   draw(ctx: Object) {
     ctx.fillStyle = this._color;
     ctx.beginPath();
-    ctx.arc(this._x, this._y, Constants.resourceSize, 0, 2*Math.PI);
+    ctx.arc(
+      this._x * Globals.widthRatio,
+      this._y * Globals.heightRatio,
+      Constants.resourceSize * Globals.widthRatio,
+      0, 2*Math.PI);
     ctx.fill();
   }
 }

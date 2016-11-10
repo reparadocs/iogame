@@ -32,6 +32,9 @@ function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
+	Constants.widthRatio = window.innerWidth / Constants.gameWidth;
+	Constants.heightRatio = window.innerHeight / Constants.gameHeight;
+
 	localPlayer = new Player(0, 0, [], '', createBullet);
 	localPlayer.reset();
 
@@ -244,6 +247,9 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
+	Constants.widthRatio = window.innerWidth / Constants.gameWidth;
+	Constants.heightRatio = window.innerHeight / Constants.gameHeight;
+
 	keys.update();
 	//localPlayer.update(borders, resources);
 
@@ -272,6 +278,8 @@ function update() {
 function draw() {
 	// Wipe the canvas clean
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = '#FFC0CB';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	// Draw the local player
 	localPlayer.draw(ctx);
@@ -293,9 +301,8 @@ function draw() {
 	}
 
 	ctx.fillStyle = '#000';
-	ctx.font = "36px serif";
-	ctx.fillText("Shots: " + localPlayer.getBulletCount(), 10, Constants.gameHeight + 100);
-	ctx.fillText("Score: " + localPlayer.getScore(), 500, Constants.gameHeight + 100);
+	ctx.fillText("Shots: " + localPlayer.getBulletCount(), 10, canvas.height - 14);
+	ctx.fillText("Score: " + localPlayer.getScore(), 500, canvas.height - 14);
 };
 
 /**************************************************
@@ -306,10 +313,10 @@ function drawLoading() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	ctx.fillStyle = '#000';
-	ctx.fillRect(0, 0, Constants.borderSize, Constants.gameHeight);
-	ctx.fillRect(0, 0, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(0, Constants.gameHeight, Constants.gameWidth, Constants.borderSize);
-	ctx.fillRect(Constants.gameWidth, 0, Constants.borderSize, Constants.gameHeight);
+	ctx.fillRect(0, 0, Constants.borderSize, window.innerHeight - 200);
+	ctx.fillRect(0, 0, window.innerWidth, Constants.borderSize);
+	ctx.fillRect(0, window.innerHeight, window.innerWidth, Constants.borderSize);
+	ctx.fillRect(window.innerWidth, 0, Constants.borderSize, window.innerHeight);
 
 	ctx.font = "36px serif";
   ctx.fillText("Welcome to Dodgeball! Press Space to start", 10, 50);

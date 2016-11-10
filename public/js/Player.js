@@ -4,6 +4,7 @@
 **************************************************/
 var Constants = require('./Constants').Constants;
 var GameObject = require('./GameObject').GameObject;
+var Globals = require('./Globals').Globals;
 
 class Player extends GameObject {
 	_dir: Array<number>;
@@ -104,29 +105,39 @@ class Player extends GameObject {
 	}
 
 	draw(ctx: Object) {
+		var x_pos = this._x * Globals.widthRatio;
+		var y_pos = this._y * Globals.heightRatio;
+
 		ctx.fillStyle = this._color;
 		ctx.beginPath();
-		ctx.arc(this._x, this._y, Constants.playerSize, 0, 2*Math.PI);
+		ctx.arc(x_pos, y_pos, Constants.playerSize * Globals.widthRatio, 0, 2*Math.PI);
 		ctx.fill();
 		ctx.fillStyle = '#000';
 		if (this._chargeTime !== 0) {
 			ctx.beginPath();
 			const charged = Date.now() - this._chargeTime;
 			let size =
-				charged * Constants.bulletGrowthRate > Constants.bulletMaxSize
-				? Constants.bulletMaxSize
-				: charged * Constants.bulletGrowthRate;
+				charged * Constants.bulletGrowthRate * Globals.widthRatio > Constants.bulletMaxSize
+				? Constants.bulletMaxSize * Globals.widthRatio
+				: charged * Constants.bulletGrowthRate * Globals.widthRatio;
 			if (size < 1) {
 				size = 1;
 			}
-			ctx.arc(this._x, this._y, size, 0, 2*Math.PI);
-			ctx.moveTo(this._x + (size * this._shootDir[0]), this._y + (size * this._shootDir[1]));
-			ctx.lineTo(this._x + ((size - 5) * this._shootDir[0]), this._y + ((size - 5) * this._shootDir[1]));
+			ctx.arc(x_pos, y_pos, size * Globals.widthRatio, 0, 2*Math.PI);
+			ctx.moveTo(
+				x_pos + (size * Globals.widthRatio * this._shootDir[0]),
+				y_pos + (size * Globals.widthRatio * this._shootDir[1]));
+			ctx.lineTo(
+				x_pos + ((size * Globals.widthRatio - 5) * this._shootDir[0]),
+				y_pos + ((size * Globals.widthRatio - 5) * this._shootDir[1]));
 			ctx.stroke();
 		}
 
-		ctx.font = "12px serif";
-		ctx.fillText(this._bulletCount, this._x - 5, this._y + 5);
+		ctx.font = "18px serif";
+		ctx.fillText(
+			this._bulletCount, 
+			this._x * Globals.widthRatio - 5,
+			this._y * Globals.heightRatio + 5);
 	}
 
 	applyUpdate(data: Object) {
@@ -152,7 +163,7 @@ class Player extends GameObject {
 		this._y = Math.round(Math.random()*(Constants.gameHeight-40)) + 20;
 		this._bulletCount = 1;
 		this._alive = true;
-		this._score = 0;
+		//this._score = 0;
 		this._color = color ? color : '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
 		this._dir = [1,0];
 		this._shootDir = this._dir;
