@@ -13,7 +13,9 @@ var Constants: {
   bulletGrowthRate: number,
 
   resourceSize: number,
-  numResources: number
+  numResources: number,
+
+  maxHistoryBuffer: number,
 } = {
   gameHeight: 600,
   gameWidth: 1000,
@@ -30,6 +32,8 @@ var Constants: {
   resourceSize: 2,
   numResources: 100,
   resourceSpawnRate: 60,
+
+  maxHistoryBuffer: 500,
 };
 
 exports.Constants = Constants;

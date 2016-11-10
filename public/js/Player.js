@@ -78,7 +78,7 @@ class Player extends GameObject {
 		this._chargeTime = 0;
 	}
 
-	update(borders: Array<Object>, resources: Array<Object>) {
+	update(borders: Array<Object>, resources: ?Array<Object> = null) {
 		let borderCollision = false;
 		for (var i = 0; i < borders.length; i++) {
 			if (this.collision(
@@ -95,10 +95,12 @@ class Player extends GameObject {
 			this._x += this._dir[0] * Constants.playerSpeed;
 			this._y += this._dir[1] * Constants.playerSpeed;
 
-			for (var i = 0; i < resources.length; i++) {
-				if (this.collision(resources[i])) {
-					resources[i].setAlive(false);
-					this._bulletCount += 1;
+			if (resources) {
+				for (var i = 0; i < resources.length; i++) {
+					if (this.collision(resources[i])) {
+						resources[i].setAlive(false);
+						this._bulletCount += 1;
+					}
 				}
 			}
 		}
@@ -138,16 +140,6 @@ class Player extends GameObject {
 			this._bulletCount, 
 			this._x * Globals.widthRatio - 5,
 			this._y * Globals.heightRatio + 5);
-	}
-
-	applyUpdate(data: Object) {
-		super.applyUpdate(data);
-		this._dir = data.dir;
-		if (data.dir[0] !== 0 || data.dir[1] !== 0) {
-			this._shootDir = data.dir;
-		}
-		this._bulletCount = data.bulletCount;
-		this._score = data.score;
 	}
 
 	serialize() {

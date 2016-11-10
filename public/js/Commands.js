@@ -1,9 +1,10 @@
 //@flow
 class Commands{
   static changeDir(player: Object, xDir: number, yDir: number, socket: ?Object = null) {
-    player.setDir([xDir, yDir]);
     if (socket) {
       socket.emit("change player direction",  {xDir: xDir, yDir: yDir});
+    } else {
+      player.setDir([xDir, yDir]);
     }
   }
 
