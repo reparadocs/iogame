@@ -58,7 +58,7 @@ class Keys {
 
 	isPlayerOnMouse() {
 		return Math.abs(this._localPlayer.getX() * Globals.widthRatio - this._mouseX) < 15
-		&& Math.abs(this._localPlayer.getY() * Globals.heightRatio - this._mouseY) < 15;
+			&& Math.abs(this._localPlayer.getY() * Globals.heightRatio - this._mouseY) < 15;
 	}
 
 	update() {

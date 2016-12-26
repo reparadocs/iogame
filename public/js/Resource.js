@@ -24,7 +24,8 @@ class Resource extends GameObject {
       this._x * Globals.widthRatio,
       this._y * Globals.heightRatio,
       Constants.resourceSize * Globals.widthRatio,
-      0, 2*Math.PI);
+      0, 2*Math.PI,
+    );
     ctx.fill();
   }
 }

@@ -75,7 +75,7 @@ function onClientDisconnect() {
 };
 
 function onNewPlayer(data: Object) {
-  var newPlayer = new Player(data.x, data.y, data.dir, data.color, createBullet);
+  var newPlayer = new Player(data.x, data.y, data.dir, data.color, data.name, createBullet);
   newPlayer.id = this.id;
   this.broadcast.emit("new player", {
     id: newPlayer.id,
@@ -83,6 +83,7 @@ function onNewPlayer(data: Object) {
     y: newPlayer.getY(),
     dir: newPlayer.getDir(),
     color: newPlayer.getColor(),
+    name: newPlayer.getName(),
   });
   var i, existingPlayer;
   for (i = 0; i < players.length; i++) {
@@ -93,6 +94,7 @@ function onNewPlayer(data: Object) {
       y: existingPlayer.getY(),
       dir: existingPlayer.getDir(),
       color: existingPlayer.getColor(),
+      name: existingPlayer.getName(),
     });
   };
   for (i = 0; i < resources.length; i++) {

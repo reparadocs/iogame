@@ -14,8 +14,10 @@ class Player extends GameObject {
 	_score: number;
 	_shootDir: Array<number>;
 	_createBullet: Function;
+	_name: string;
+	_init_name: boolean;
 
-	constructor(startX: number, startY: number, dir: Array<number>, color: string, createBullet: Function) {
+	constructor(startX: number, startY: number, dir: Array<number>, color: string, name: string, createBullet: Function) {
 		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
 		this._dir = dir;
 		this._shootDir = dir;
@@ -23,6 +25,26 @@ class Player extends GameObject {
 		this._chargeTime = 0;
 		this._createBullet = createBullet;
 		this._score = 0;
+		this._init_name = false;
+		this._name = this._generateName(name);
+	}
+
+	_generateName(name: string) {
+		if (name != null) {
+			return name;
+		}
+
+		if (!this._init_name) {
+			this._init_name = true;
+			const adjective = Constants.adjectives[Math.floor(Math.random()*Constants.adjectives.length)];
+			const animal = Constants.animals[Math.floor(Math.random()*Constants.animals.length)]
+			return adjective + " " + animal
+		}
+		return this._name;
+	}
+
+	getName() {
+		return this._name;
 	}
 
 	getBulletCount() {
@@ -107,8 +129,8 @@ class Player extends GameObject {
 	}
 
 	draw(ctx: Object) {
-		var x_pos = this._x * Globals.widthRatio;
-		var y_pos = this._y * Globals.heightRatio;
+		const x_pos = this._x * Globals.widthRatio;
+		const y_pos = this._y * Globals.heightRatio;
 
 		ctx.fillStyle = this._color;
 		ctx.beginPath();
@@ -137,9 +159,10 @@ class Player extends GameObject {
 
 		ctx.font = "18px serif";
 		ctx.fillText(
-			this._bulletCount, 
+			this._bulletCount,
 			this._x * Globals.widthRatio - 5,
-			this._y * Globals.heightRatio + 5);
+			this._y * Globals.heightRatio + 5,
+		);
 	}
 
 	serialize() {

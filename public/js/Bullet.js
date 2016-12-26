@@ -72,7 +72,8 @@ class Bullet extends GameObject {
       this._x * Globals.widthRatio,
       this._y * Globals.heightRatio,
       this._size * Globals.widthRatio,
-      0, 2*Math.PI);
+      0, 2*Math.PI,
+    );
     ctx.fill();
   }
 };

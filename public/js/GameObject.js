@@ -75,7 +75,8 @@ class GameObject {
     ctx.fillRect(
       (this._x * Globals.widthRatio) - ((this._width * Globals.widthRatio) / 2),
       (this._y * Globals.heightRatio) - ((this._height * Globals.heightRatio) / 2),
-      (Globals.widthRatio * this._width), (Globals.heightRatio * this._height));
+      (Globals.widthRatio * this._width), (Globals.heightRatio * this._height),
+    );
   }
 
   applyUpdate(data: Object) {

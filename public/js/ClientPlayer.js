@@ -8,8 +8,8 @@ class ClientPlayer extends Player {
   _offset: number;
   _borders: Array<Object>;
 
-  constructor(startX: number, startY: number, dir: Array<number>, color: string, createBullet: Function) {
-    super(startX, startY, dir, color, createBullet);
+  constructor(startX: number, startY: number, dir: Array<number>, color: string, name: string, createBullet: Function) {
+    super(startX, startY, dir, color, name, createBullet);
     this._history = [];
     this._offset = 0;
   }

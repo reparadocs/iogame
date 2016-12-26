@@ -6,6 +6,7 @@ var Keys = require('./Keys').Keys;
 var GameObject = require('./GameObject').GameObject;
 var Commands = require('./Commands').Commands;
 var requestAnimFrame = require('./requestAnimationFrame').requestAnimFrame;
+var Globals = require('./Globals').Globals;
 
 /**************************************************
 ** GAME VARIABLES
@@ -34,10 +35,10 @@ function init() {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	Constants.widthRatio = window.innerWidth / Constants.gameWidth;
-	Constants.heightRatio = window.innerHeight / Constants.gameHeight;
+	Globals.widthRatio = window.innerWidth / Constants.gameWidth;
+	Globals.heightRatio = window.innerHeight / Constants.gameHeight;
 
-	localPlayer = new Player(0, 0, [], '', createBullet);
+	localPlayer = new Player(0, 0, [], '', null, createBullet);
 	localPlayer.reset();
 
 	if (location.hostname === "localhost") {
@@ -121,7 +122,8 @@ function onSocketConnected() {
 			x: localPlayer.getX(),
 			y: localPlayer.getY(),
 			dir: localPlayer.getDir(),
-			color: localPlayer.getColor()
+			color: localPlayer.getColor(),
+			name: localPlayer.getName(),
 		});
 		localPlayer.id = socket.io.engine.id;
 };
@@ -132,7 +134,7 @@ function onSocketDisconnect() {
 
 function onNewPlayer(data) {
   console.log("New player connected: "+data.id);
-  var newPlayer = new Player(data.x, data.y, data.dir, data.color, createBullet);
+  var newPlayer = new Player(data.x, data.y, data.dir, data.color, data.name, createBullet);
   newPlayer.id = data.id;
   remotePlayers.push(newPlayer);
 };
@@ -254,8 +256,8 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-	Constants.widthRatio = window.innerWidth / Constants.gameWidth;
-	Constants.heightRatio = window.innerHeight / Constants.gameHeight;
+	Globals.widthRatio = window.innerWidth / Constants.gameWidth;
+	Globals.heightRatio = window.innerHeight / Constants.gameHeight;
 
 	keys.update();
 	localPlayer.update(borders, resources);
@@ -285,9 +287,17 @@ function update() {
 function draw() {
 	// Wipe the canvas clean
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.fillStyle = '#FFC0CB';
+
+	ctx.fillStyle = Constants.color_pink;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+	ctx.fillStyle = Constants.color_dark_pink;
+	ctx.fillRect(
+		0 + Constants.borderSize,
+		canvas.height - 72,
+		300,
+		72 - Constants.borderSize,
+	);
 	// Draw the local player
 	localPlayer.draw(ctx);
 
@@ -307,9 +317,26 @@ function draw() {
 		borders[i].draw(ctx);
 	}
 
-	ctx.fillStyle = '#000';
-	ctx.fillText("Shots: " + localPlayer.getBulletCount(), 10, canvas.height - 14);
-	ctx.fillText("Score: " + localPlayer.getScore(), 500, canvas.height - 14);
+	ctx.fillStyle = Constants.color_black;
+	ctx.font = Constants.font_size_user_stats;
+	ctx.fillText("Name: " + localPlayer.getName(), 10, canvas.height - 50);
+	ctx.fillText("Shots: " + localPlayer.getBulletCount(), 10, canvas.height - 30);
+	ctx.fillText("Score: " + localPlayer.getScore(), 10, canvas.height - 10);
+
+	var clonedRemote = remotePlayers.slice(0);
+	clonedRemote.push(localPlayer);
+	clonedRemote.sort(function(a, b) {
+    return b._score - a._score;
+	});
+
+	ctx.font = Constants.font_size_scoreboard;
+	for (i = 0; i < (clonedRemote.length > 5 ? 5 : clonedRemote.length); i++) {
+		ctx.fillText(
+			clonedRemote[i]._name + ": " + clonedRemote[i]._score,
+			10,
+			30 + (i * 30),
+		);
+	}
 };
 
 /**************************************************
