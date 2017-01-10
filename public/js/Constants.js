@@ -16,8 +16,8 @@ var Constants: {
   numResources: number,
   maxHistoryBuffer: number,
 
-  animals: Array<string>,
-  adjectives: Array<string>,
+  name_suffix_animals: Array<string>,
+  name_prefix_adjectives: Array<string>,
 
   color_pink: string,
   color_dark_pink: string,
@@ -41,11 +41,12 @@ var Constants: {
 
   resourceSize: 2,
   numResources: 100,
+
   resourceSpawnRate: 60,
 
   maxHistoryBuffer: 500,
 
-  animals: ['alligator', 'ant', 'antelope', 'bat', 'bear', 'beaver', 'bee', 'beetle',
+  name_suffix_animals: ['alligator', 'ant', 'antelope', 'bat', 'bear', 'beaver', 'bee', 'beetle',
   'bluebird', 'buffalo', 'bunny', 'butterfly', 'bull', 'camel', 'cat', 'chicken',
   'chimpanzee', 'chipmunk', 'cow', 'coyote', 'crab', 'crane', 'crocodile', 'deer',
   'dog', 'dolphin', 'donkey', 'dove', 'dragon', 'eagle', 'elk', 'eel', 'fish', 'flamingo',
@@ -54,7 +55,7 @@ var Constants: {
   'moth', 'mouse', 'ostrich', 'rabbit', 'rat', 'robin', 'rooster', 'seahorse', 'shark',
   'sheep', 'toad', 'unicorn','zebra'],
 
-  adjectives: ['incredible', 'awesome', 'amazing', 'marvelous', 'wonderful',
+  name_prefix_adjectives: ['incredible', 'awesome', 'amazing', 'marvelous', 'wonderful',
   'unbelievable', 'stunning', 'astonishing', 'astounding', 'breathtaking',
   'extraordinary', 'fabulous', 'fantastic', 'phenomenal', 'remarkable',
   'spectacular', 'sensational'],

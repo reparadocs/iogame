@@ -17,7 +17,14 @@ class Player extends GameObject {
 	_name: string;
 	_init_name: boolean;
 
-	constructor(startX: number, startY: number, dir: Array<number>, color: string, name: string, createBullet: Function) {
+	constructor(
+		startX: number,
+		startY: number,
+		dir: Array<number>,
+		color: string,
+		name: string,
+		createBullet: Function
+	) {
 		super(startX, startY, Constants.playerSize, Constants.playerSize, color);
 		this._dir = dir;
 		this._shootDir = dir;
@@ -33,14 +40,13 @@ class Player extends GameObject {
 		if (name != null) {
 			return name;
 		}
-
-		if (!this._init_name) {
-			this._init_name = true;
-			const adjective = Constants.adjectives[Math.floor(Math.random()*Constants.adjectives.length)];
-			const animal = Constants.animals[Math.floor(Math.random()*Constants.animals.length)]
-			return adjective + " " + animal
-		}
-		return this._name;
+		const adjective = Constants.name_prefix_adjectives[
+			Math.floor(Math.random()*Constants.name_prefix_adjectives.length)
+		];
+		const animal = Constants.name_suffix_animals[
+			Math.floor(Math.random()*Constants.name_suffix_animals.length)
+		];
+		return adjective + " " + animal
 	}
 
 	getName() {
@@ -150,10 +156,12 @@ class Player extends GameObject {
 			ctx.arc(x_pos, y_pos, size * Globals.widthRatio, 0, 2*Math.PI);
 			ctx.moveTo(
 				x_pos + (size * Globals.widthRatio * this._shootDir[0]),
-				y_pos + (size * Globals.widthRatio * this._shootDir[1]));
+				y_pos + (size * Globals.widthRatio * this._shootDir[1])
+			);
 			ctx.lineTo(
 				x_pos + ((size * Globals.widthRatio - 5) * this._shootDir[0]),
-				y_pos + ((size * Globals.widthRatio - 5) * this._shootDir[1]));
+				y_pos + ((size * Globals.widthRatio - 5) * this._shootDir[1])
+			);
 			ctx.stroke();
 		}
 

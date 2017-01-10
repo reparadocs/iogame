@@ -41,6 +41,13 @@ function init() {
 	localPlayer = new Player(0, 0, [], '', null, createBullet);
 	localPlayer.reset();
 
+	setInputEventHandlers();
+	//var splash_screen = true;
+	// while (splash_screen) {
+	// 	drawLoading();
+	//
+	// }
+
 	if (location.hostname === "localhost") {
 		socket = io.connect("http://localhost:3000");
 	} else {
@@ -69,7 +76,8 @@ function init() {
 /**************************************************
 ** GAME EVENT HANDLERS
 **************************************************/
-var setEventHandlers = function() {
+
+var setInputEventHandlers = function() {
 	// Keyboard
 	window.addEventListener("keydown", onKeydown, false);
 	window.addEventListener("keyup", onKeyup, false);
@@ -77,6 +85,10 @@ var setEventHandlers = function() {
 
 	// Window resize
 	window.addEventListener("resize", onResize, false);
+}
+
+
+var setEventHandlers = function() {
 	socket.on("connect", onSocketConnected);
 	socket.on("disconnect", onSocketDisconnect);
 	socket.on("new player", onNewPlayer);
