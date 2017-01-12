@@ -272,6 +272,7 @@ function update() {
   Globals.heightRatio = window.innerHeight / Constants.gameHeight;
 
   keys.update();
+
   localPlayer.update(borders, resources);
 
   for (var i = 0; i < remotePlayers.length; i++) {
