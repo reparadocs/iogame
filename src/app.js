@@ -197,7 +197,7 @@ function update() {
         serialized: players[i].serialize(),
         color: players[i].getColor(),
       });
-		} else if (frame % 5 === 0) {
+		} else if (frame % 2 === 0) {
       io.sockets.emit("update", {
         id: players[i].id,
         frame: frame,
