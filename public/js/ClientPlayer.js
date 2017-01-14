@@ -21,13 +21,13 @@ class ClientPlayer extends Player {
     this._offset = 0;
   }
 
-  update(borders: Array<Object>, resources: ?Array<Object>) {
+  update(borders: Array<Object>, resources: ?Array<Object>) {/*
     this._borders = borders;
     super.update(borders, resources);
     this._history.push(this.hash(this.serialize()));
     if (this._history.length > Constants.maxHistoryBuffer) {
       this._history = this._history.splice(-Constants.maxHistoryBuffer);
-    }
+    }*/
   }
 
   hash(data: Object) {
