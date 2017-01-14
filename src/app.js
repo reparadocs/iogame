@@ -59,6 +59,7 @@ function onSocketConnection(client) {
   client.on("change player direction", onChangePlayerDirection);
 	client.on("player charges shot", onChargeShot)
 	client.on("player shoots", onShoot);
+  client.on("stop player", onPlayerStop);
 };
 
 function onClientDisconnect() {
@@ -107,12 +108,26 @@ function onNewPlayer(data: Object) {
   players.push(newPlayer);
 };
 
+function onPlayerStop(data) {
+  var player = playerById(this.id);
+  if (!player) {
+    console.log("Player not found: "+this.id);
+    return;
+  }
+  Commands.changeDir(player, 0, 0);
+  io.sockets.emit("update", {
+    id: player.id,
+    frame: frame,
+    serialized: player.serialize(),
+  });
+}
+
 function onChangePlayerDirection(data) {
 	var player = playerById(this.id);
 	if (!player) {
 			console.log("Player not found: "+this.id);
 			return;
-	};
+	}
 	Commands.changeDir(player, data.xDir, data.yDir);
   io.sockets.emit("update", {
     id: player.id,

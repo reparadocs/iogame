@@ -57,13 +57,14 @@ class Keys {
   }
 
   isPlayerOnMouse() {
-    return Math.abs(this._localPlayer.getX() * Globals.widthRatio - this._mouseX) < 15
-    && Math.abs(this._localPlayer.getY() * Globals.heightRatio - this._mouseY) < 15;
+    return Math.abs(this._localPlayer.getX() * Globals.widthRatio - this._mouseX) < Constants.mouseTolerance
+    && Math.abs(this._localPlayer.getY() * Globals.heightRatio - this._mouseY) < Constants.mouseTolerance;
   }
 
   update() {
     if (this.isPlayerOnMouse() && (this._localPlayer.getDir()[0] !== 0 || this._localPlayer.getDir()[1] !== 0)) {
-      Commands.changeDir(this._localPlayer, 0, 0, this._socket);
+      Commands.stopPlayer(this._localPlayer, this._socket);
+      //Commands.changeDir(this._localPlayer, 0, 0, this._socket);
     }
 
     if (this._dir) {

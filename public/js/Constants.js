@@ -16,6 +16,8 @@ var Constants: {
   numResources: number,
   maxHistoryBuffer: number,
 
+  mouseTolerance: number,
+
   name_suffix_animals: Array<string>,
   name_prefix_adjectives: Array<string>,
 
@@ -45,6 +47,8 @@ var Constants: {
   resourceSpawnRate: 60,
 
   maxHistoryBuffer: 500,
+
+  mouseTolerance: 30,
 
   name_suffix_animals: ['alligator', 'ant', 'antelope', 'bat', 'bear', 'beaver', 'bee', 'beetle',
   'bluebird', 'buffalo', 'bunny', 'butterfly', 'bull', 'camel', 'cat', 'chicken',
