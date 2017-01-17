@@ -15,6 +15,8 @@ class Keys {
   _mouseY: number;
   _dir: ?Array<number>;
 
+  _init: boolean;
+
   constructor(localPlayer: Object, socket: Object) {
     this._localPlayer = localPlayer;
     this._socket = socket;
@@ -22,6 +24,7 @@ class Keys {
     this._dir = null;
     this._mouseX = 0;
     this._mouseY = 0;
+    this._init = false;
   }
 
   onKeyDown(e: Object) {
@@ -33,6 +36,10 @@ class Keys {
         Commands.chargeShot(this._localPlayer, Date.now(), this._socket);
       }
       break;
+      case 13: //enter
+      if (!this.init) {
+        this._init = true;
+      }
     };
   }
 

@@ -41,21 +41,17 @@ function init() {
   localPlayer = new Player(0, 0, [], '', null, createBullet);
   localPlayer.reset();
 
-  setInputEventHandlers();
-  //var splash_screen = true;
-  // while (splash_screen) {
-  // 	drawLoading();
-  //
-  // }
 
-  if (location.hostname === "localhost") {
+  setInputEventHandlers();
+
+   if (location.hostname === "localhost") {
     socket = io.connect("http://localhost:3000");
   } else {
     socket = io.connect("https://testiogame.herokuapp.com")
   }
 
-  // Initialise keyboard controls
-  keys = new Keys(localPlayer, socket);
+    // Initialise keyboard controls
+    keys = new Keys(localPlayer, socket);
 
   remotePlayers = [];
   bullets = [];
@@ -256,7 +252,11 @@ function animate() {
   for (var i = 0; i < framesToRun; i++) {
     frame += 1;
     update();
-    draw();
+    if (!keys._init) {
+      drawLoading();
+    } else {
+        draw();
+    }
   }
   lastTime += framesToRun * (1000 / 60);
   // Request a new animation frame using Paul Irish's shim
@@ -358,14 +358,15 @@ function drawLoading() {
   // Wipe the canvas clean
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, Constants.borderSize, window.innerHeight - 200);
-  ctx.fillRect(0, 0, window.innerWidth, Constants.borderSize);
-  ctx.fillRect(0, window.innerHeight, window.innerWidth, Constants.borderSize);
-  ctx.fillRect(window.innerWidth, 0, Constants.borderSize, window.innerHeight);
+  ctx.fillStyle = Constants.color_pink;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  ctx.fillStyle = Constants.color_black;
   ctx.font = "36px serif";
-  ctx.fillText("Welcome to Dodgeball! Press Space to start", 10, 50);
+  ctx.fillText("Welcome to Dodgeball!", 10, canvas.height / 2 - 40);
+  ctx.fillText("Press space to shoot, hold space to charge up shot!", 10, canvas.height / 2);
+  ctx.fillText("Move with the mouse", 10, canvas.height / 2 + 40);
+  ctx.fillText("Press Enter to start", 10, canvas.height / 2 + 80);
 };
 
 init();
