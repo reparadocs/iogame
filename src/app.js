@@ -34,7 +34,10 @@ function init() {
   borders = [new GameObject(Constants.borderSize / 2, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'),
 		new GameObject(Constants.gameWidth / 2, Constants.borderSize / 2, Constants.gameWidth, Constants.borderSize,  '#000'),
 		new GameObject(Constants.gameWidth, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight,  '#000'),
-		new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize,  '#000')];
+		new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize,  '#000'),
+    //new GameObject(Constants.gameWidth / 2, Constants.gameHeight / 3, Constants.gameWidth / 4, Constants.borderSize * 4, '#000')
+
+  ];
 
   for (var i = 0; i < Constants.numResources; i++) {
     var startX = Math.round(Math.random()*(Constants.gameWidth-5)),

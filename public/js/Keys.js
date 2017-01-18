@@ -36,10 +36,6 @@ class Keys {
         Commands.chargeShot(this._localPlayer, Date.now(), this._socket);
       }
       break;
-      case 13: //enter
-      if (!this.init) {
-        this._init = true;
-      }
     };
   }
 
@@ -61,6 +57,18 @@ class Keys {
     const length = Math.sqrt(diffX * diffX + diffY * diffY);
     const vector = [diffX / length, diffY / length];
     this._dir = vector;
+  }
+
+  onMouseClick(e: Object) {
+    if (
+      !this._init
+      && this._mouseX > Globals.playButtonXStart
+      && this._mouseX < Globals.playButtonXStart + Globals.playButtonXSize
+      && this._mouseY > Globals.playButtonYStart
+      && this._mouseY < Globals.playButtonYStart + Globals.playButtonYSize
+    ) {
+      this._init = true;
+    };
   }
 
   isPlayerOnMouse() {

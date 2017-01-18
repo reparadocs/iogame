@@ -37,6 +37,8 @@ function init() {
 
   Globals.widthRatio = window.innerWidth / Constants.gameWidth;
   Globals.heightRatio = window.innerHeight / Constants.gameHeight;
+  Globals.canvasWidth = canvas.width;
+  Globals.canvasHeight = canvas.height;
 
   localPlayer = new Player(0, 0, [], '', null, createBullet);
   localPlayer.reset();
@@ -50,8 +52,8 @@ function init() {
     socket = io.connect("https://testiogame.herokuapp.com")
   }
 
-    // Initialise keyboard controls
-    keys = new Keys(localPlayer, socket);
+  // Initialise keyboard controls
+  keys = new Keys(localPlayer, socket);
 
   remotePlayers = [];
   bullets = [];
@@ -59,7 +61,9 @@ function init() {
   borders = [new GameObject(Constants.borderSize / 2, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight, '#000'),
   new GameObject(Constants.gameWidth / 2, Constants.borderSize / 2, Constants.gameWidth, Constants.borderSize,  '#000'),
   new GameObject(Constants.gameWidth, Constants.gameHeight / 2, Constants.borderSize, Constants.gameHeight,  '#000'),
-  new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize,  '#000')];
+  new GameObject(Constants.gameWidth / 2, Constants.gameHeight, Constants.gameWidth, Constants.borderSize,  '#000'),
+  //new GameObject(Constants.gameWidth / 2, Constants.gameHeight / 3, Constants.gameWidth / 4, Constants.borderSize * 4, '#000')
+];
   ready = false;
 
   // Start listening for events
@@ -78,7 +82,7 @@ var setInputEventHandlers = function() {
   window.addEventListener("keydown", onKeydown, false);
   window.addEventListener("keyup", onKeyup, false);
   window.addEventListener("mousemove", onMouseMove, false);
-
+  window.addEventListener("click", onMouseClick, false);
   // Window resize
   window.addEventListener("resize", onResize, false);
 }
@@ -111,10 +115,18 @@ function onKeyup(e) {
   };
 };
 
+// Mouse has moved
 function onMouseMove(e) {
   if (localPlayer) {
     keys.onMouseMove(e);
   }
+}
+
+// Mouse click
+function onMouseClick(e) {
+  if (localPlayer) {
+    keys.onMouseClick(e);
+  };
 }
 
 // Browser window resize
@@ -270,7 +282,8 @@ function animate() {
 function update() {
   Globals.widthRatio = window.innerWidth / Constants.gameWidth;
   Globals.heightRatio = window.innerHeight / Constants.gameHeight;
-
+  Globals.canvasWidth = canvas.width;
+  Globals.canvasHeight = canvas.height;
   keys.update();
   localPlayer.update(borders, resources);
 
@@ -366,7 +379,22 @@ function drawLoading() {
   ctx.fillText("Welcome to Dodgeball!", 10, canvas.height / 2 - 40);
   ctx.fillText("Press space to shoot, hold space to charge up shot!", 10, canvas.height / 2);
   ctx.fillText("Move with the mouse", 10, canvas.height / 2 + 40);
-  ctx.fillText("Press Enter to start", 10, canvas.height / 2 + 80);
+
+  Globals.playButtonXStart = 7;
+  Globals.playButtonYStart = canvas.height / 2 + 50;
+  Globals.playButtonXSize = 443;
+  Globals.playButtonYSize = 40;
+
+  ctx.fillStyle = Constants.color_dark_pink;
+  ctx.fillRect(
+    Globals.playButtonXStart,
+    Globals.playButtonYStart,
+    Globals.playButtonXSize,
+    Globals.playButtonYSize,
+  );
+
+  ctx.fillStyle = Constants.color_black;
+  ctx.fillText("Click here to enter the arena!", 10, canvas.height / 2 + 80);
 };
 
 init();
