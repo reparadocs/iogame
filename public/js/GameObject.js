@@ -73,9 +73,10 @@ class GameObject {
   draw(ctx: Object) {
     ctx.fillStyle = this._color;
     ctx.fillRect(
-      (this._x * Globals.widthRatio) - ((this._width * Globals.widthRatio) / 2),
-      (this._y * Globals.heightRatio) - ((this._height * Globals.heightRatio) / 2),
-      (Globals.widthRatio * this._width), (Globals.heightRatio * this._height),
+      ((this._x - this._width / 2) * Globals.widthRatio),
+      ((this._y - this._height / 2) * Globals.heightRatio),
+      (Globals.widthRatio * this._width * 2),
+      (Globals.heightRatio * this._height * 2),
     );
   }
 

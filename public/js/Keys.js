@@ -15,6 +15,8 @@ class Keys {
   _mouseY: number;
   _dir: ?Array<number>;
 
+  _init: boolean;
+
   constructor(localPlayer: Object, socket: Object) {
     this._localPlayer = localPlayer;
     this._socket = socket;
@@ -22,6 +24,7 @@ class Keys {
     this._dir = null;
     this._mouseX = 0;
     this._mouseY = 0;
+    this._init = false;
   }
 
   onKeyDown(e: Object) {
@@ -54,6 +57,18 @@ class Keys {
     const length = Math.sqrt(diffX * diffX + diffY * diffY);
     const vector = [diffX / length, diffY / length];
     this._dir = vector;
+  }
+
+  onMouseClick(e: Object) {
+    if (
+      !this._init
+      && this._mouseX > Globals.playButtonXStart
+      && this._mouseX < Globals.playButtonXStart + Globals.playButtonXSize
+      && this._mouseY > Globals.playButtonYStart
+      && this._mouseY < Globals.playButtonYStart + Globals.playButtonYSize
+    ) {
+      this._init = true;
+    };
   }
 
   isPlayerOnMouse() {
