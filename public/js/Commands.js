@@ -8,6 +8,14 @@ class Commands{
     }
   }
 
+  static stopPlayer(player: Object, socket: ?Object = null) {
+    if (socket) {
+      socket.emit("stop player");
+    } else {
+      player.setDir([0,0]);
+    }
+  }
+
   static chargeShot(player: Object, time: number, socket: ?Object = null) {
     player.chargeShot(time);
     if (socket) {

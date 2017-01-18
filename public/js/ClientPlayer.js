@@ -21,13 +21,13 @@ class ClientPlayer extends Player {
     this._offset = 0;
   }
 
-  update(borders: Array<Object>) {
+  update(borders: Array<Object>, resources: ?Array<Object>) {/*
     this._borders = borders;
-    super.update(borders);
+    super.update(borders, resources);
     this._history.push(this.hash(this.serialize()));
     if (this._history.length > Constants.maxHistoryBuffer) {
       this._history = this._history.splice(-Constants.maxHistoryBuffer);
-    }
+    }*/
   }
 
   hash(data: Object) {
@@ -50,6 +50,7 @@ class ClientPlayer extends Player {
       this.applyUpdate(data.serialized);
       return;
     }
+
     const serverFrameState = this.hash(data.serialized);
     const clientFrameState = this._history[data.frame - this._offset];
     if (serverFrameState === clientFrameState) {
@@ -59,7 +60,7 @@ class ClientPlayer extends Player {
       return;
     } else {
       // We are not in sync, fuck
-      this.applyUpdate(data.serialized);
+      //this.applyUpdate(data.serialized);
       const frameDiff = this._history.length + this._offset - data.frame;
       if (frameDiff > 20) {
         this._history = [this.hash(data.serialized),];

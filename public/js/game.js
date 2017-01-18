@@ -285,6 +285,7 @@ function update() {
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
   keys.update();
+
   localPlayer.update(borders, resources);
 
   for (var i = 0; i < remotePlayers.length; i++) {
