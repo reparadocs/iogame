@@ -30,7 +30,9 @@ function init() {
   // Declare the canvas and rendering context
   canvas = document.getElementById("gameCanvas");
   ctx = canvas.getContext("2d");
-
+  background_sound = new Audio("background.mp3");
+  background_sound.loop = true;
+  background_sound.play()
   // Maximise the canvas
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;

@@ -6,6 +6,13 @@ var Constants = require('./Constants').Constants;
 var GameObject = require('./GameObject').GameObject;
 var Globals = require('./Globals').Globals;
 
+if (typeof window === 'undefined') {
+  var hasAudio = false;
+} else {
+  var GameAudio = require('./GameAudio').GameAudio;
+  var hasAudio = true;
+}
+
 class Player extends GameObject {
   _dir: Array<number>;
   id: string;
@@ -112,6 +119,9 @@ class Player extends GameObject {
         size = 1;
       }
       this._createBullet(this._x, this._y, this._shootDir, size, this);
+      if (hasAudio) {
+        GameAudio.playShoot();
+      }
     }
     this._chargeTime = 0;
   }
@@ -138,6 +148,9 @@ class Player extends GameObject {
           if (this.collision(resources[i])) {
             resources[i].setAlive(false);
             this._bulletCount += 1;
+            if (hasAudio) {
+              GameAudio.playResource();
+            }
           }
         }
       }

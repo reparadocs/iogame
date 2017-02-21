@@ -6,6 +6,13 @@ var Constants = require('./Constants').Constants;
 var Globals = require('./Globals').Globals;
 var GameObject = require('./GameObject').GameObject;
 
+if (typeof window === 'undefined') {
+  var hasAudio = false;
+} else {
+  var GameAudio = require('./GameAudio').GameAudio;
+  var hasAudio = true;
+}
+
 class Bullet extends GameObject {
   _dir: Array<number>;
   _size: number;
@@ -76,6 +83,9 @@ class Bullet extends GameObject {
       localPlayer && localPlayer.id != this._owner.id && this.collision(localPlayer)
     ) {
       this._alive = false;
+      if (hasAudio) {
+        GameAudio.playDamage();
+      }
       localPlayer.damage(this._size);
       if (localPlayer.getHealth() <= 0) {
         localPlayer.setAlive(false);
