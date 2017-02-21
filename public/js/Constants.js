@@ -7,10 +7,15 @@ var Constants: {
 
   playerSpeed: number,
   playerSize: number,
+  playerHealth: number,
 
   bulletSpeed: number,
   bulletMaxSize: number,
   bulletGrowthRate: number,
+  bulletDecayRate: number,
+  bulletSizeLifeRatio: number,
+  bulletBaseLifetime: number,
+  bulletSizeDamageRatio: number,
 
   resourceSize: number,
   numResources: number,
@@ -36,10 +41,15 @@ var Constants: {
 
   playerSpeed: 3,
   playerSize: 15,
+  playerHealth: 15,
 
   bulletSpeed: 7,
   bulletMaxSize: 90,
   bulletGrowthRate: 0.01,
+  bulletDecayRate: 0.08,
+  bulletSizeLifeRatio: 5,
+  bulletBaseLifetime: 50,
+  bulletSizeDamageRatio: 1,
 
   resourceSize: 2,
   numResources: 100,

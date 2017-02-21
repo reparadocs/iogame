@@ -11,6 +11,7 @@ class Player extends GameObject {
   id: string;
   _bulletCount: number;
   _chargeTime: number;
+  _health: number;
   _score: number;
   _shootDir: Array<number>;
   _createBullet: Function;
@@ -32,6 +33,7 @@ class Player extends GameObject {
     this._chargeTime = 0;
     this._createBullet = createBullet;
     this._score = 0;
+    this._health = Constants.playerHealth;
     this._init_name = false;
     this._name = this._generateName(name);
   }
@@ -55,6 +57,14 @@ class Player extends GameObject {
 
   getBulletCount() {
     return this._bulletCount;
+  }
+
+  getHealth() {
+    return this._health;
+  }
+
+  damage(size: number) {
+    this._health -= size * Constants.bulletSizeDamageRatio;
   }
 
   setBulletCount(newBulletCount: number) {
@@ -171,6 +181,20 @@ class Player extends GameObject {
       this._x * Globals.widthRatio - 5,
       this._y * Globals.heightRatio + 5,
     );
+
+    ctx.fillStyle = "#777777";
+    ctx.fillRect(
+      (this._x - this._width) * Globals.widthRatio - 3 * Globals.widthRatio,
+      (this._y - this._height) * Globals.heightRatio - 10  * Globals.heightRatio,
+      35 * Globals.widthRatio,
+      7 * Globals.heightRatio);
+    ctx.fillStyle = "#32CD32";
+    ctx.fillRect(
+      (this._x - this._width) * Globals.widthRatio - 2 * Globals.widthRatio,
+      (this._y - this._height) * Globals.heightRatio - 9  * Globals.heightRatio,
+      ((this._health / Constants.playerHealth) * 33) * Globals.widthRatio,
+      5 * Globals.heightRatio);
+
   }
 
   serialize() {
@@ -186,6 +210,7 @@ class Player extends GameObject {
     this._y = Math.round(Math.random()*(Constants.gameHeight-40)) + 20;
     this._bulletCount = 1;
     this._alive = true;
+    this._health = Constants.playerHealth;
     //this._score = 0;
     this._color = color ? color : '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
     this._dir = [1,0];
