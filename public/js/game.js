@@ -34,8 +34,8 @@ function init() {
   ctx = canvas.getContext("2d");
   world = document.createElement('canvas');
   world.id = "World";
-  world.width = 2000;
-  world.height = 1200;
+  world.width = Constants.gameWidth;
+  world.height = Constants.gameHeight;
   wctx = world.getContext("2d");
 
   background_sound = new Audio("background.mp3");
@@ -45,10 +45,6 @@ function init() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  //Globals.widthRatio = window.innerWidth / Constants.gameWidth;
-  //Globals.heightRatio = window.innerHeight / Constants.gameHeight;
-  Globals.widthRatio = 1;
-  Globals.heightRatio = 1;
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
 
@@ -292,10 +288,6 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-  //Globals.widthRatio = window.innerWidth / Constants.scaleFactorWidth;
-  //Globals.heightRatio = window.innerHeight / Constants.scaleFactorHeight;
-  Globals.widthRatio = 1;
-  Globals.heightRatio = 1;
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
   keys.update();
@@ -327,7 +319,7 @@ function update() {
 function draw() {
   // Wipe the canvas clean
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  wctx.clearRect(0, 0, 2000, 1200);
+  wctx.clearRect(0, 0, Constants.gameWidth, Constants.gameHeight);
 
   ctx.fillStyle = Constants.color_pink;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -360,6 +352,7 @@ function draw() {
 
   var cropLeft = localPlayer.getX() - canvas.width / 2;
   var cropTop = localPlayer.getY() - canvas.height / 2;
+  
   Globals.playerCanvasX = canvas.width / 2;
   Globals.playerCanvasY = canvas.height / 2;
 
@@ -372,28 +365,14 @@ function draw() {
     Globals.playerCanvasY = localPlayer.getY();
   }
 
-  //width ratio is greater than 1
-  //right now i need cropLeft to SMALLER
-  console.log(Globals.widthRatio)
-  if (Globals.widthRatio <= 1.00) {
-    if (cropLeft > (Constants.gameWidth * Globals.widthRatio - canvas.width)) {
-      cropLeft = (Constants.gameWidth * Globals.widthRatio - canvas.width);
-      Globals.playerCanvasX = 
-      canvas.width - (Constants.gameWidth - localPlayer.getX());
-    }
-  } else {
-    if (cropLeft > (Constants.gameWidth * Globals.widthRatio - canvas.width)) {
-      cropLeft = (Constants.gameWidth * Globals.widthRatio - canvas.width);
-      Globals.playerCanvasX = 
-      canvas.width - (Constants.gameWidth - localPlayer.getX());
-    }
+  if (cropLeft > (Constants.gameWidth - canvas.width)) {
+    cropLeft = (Constants.gameWidth - canvas.width);
+    Globals.playerCanvasX = canvas.width - (Constants.gameWidth - localPlayer.getX());
   }
-  
 
   if (cropTop > Constants.gameHeight - canvas.height) {
     cropTop = Constants.gameHeight - canvas.height;
-    Globals.playerCanvasY =
-    canvas.height - (Constants.gameHeight - localPlayer.getY());
+    Globals.playerCanvasY = canvas.height - (Constants.gameHeight - localPlayer.getY());
   }
 
 
@@ -423,10 +402,6 @@ function draw() {
       30 + (i * 30),
     );
   }
-
-
-
-
 };
 
 /**************************************************

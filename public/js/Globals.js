@@ -1,7 +1,5 @@
 //@flow
 var Globals: {
-  widthRatio: number,
-  heightRatio: number,
   canvasHeight: number,
   canvasWidth: number,
   playButtonXStart: number,
@@ -11,8 +9,6 @@ var Globals: {
   playerCanvasX: number,
   playerCanvasY: number
 } = {
-  widthRatio: 1,
-  heightRatio: 1,
   canvasHeight: 1,
   canvasWidth: 1,
   playButtonXStart: 1,
