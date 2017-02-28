@@ -8,6 +8,8 @@ var Globals: {
   playButtonYStart: number,
   playButtonYSize: number,
   playButtonXSize: number,
+  playerCanvasX: number,
+  playerCanvasY: number
 } = {
   widthRatio: 1,
   heightRatio: 1,
@@ -17,6 +19,8 @@ var Globals: {
   playButtonYStart: 1,
   playButtonXSize: 1,
   playButtonYSize: 1,
+  playerCanvasX: 1,
+  playerCanvasY: 1,
 
 };
 

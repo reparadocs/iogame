@@ -3,6 +3,9 @@ var Constants: {
   gameHeight: number,
   gameWidth: number,
 
+  scaleFactorHeight: number,
+  scaleFactorWidth: number,
+
   borderSize: number,
 
   playerSpeed: number,
@@ -34,8 +37,11 @@ var Constants: {
   font_size_user_stats: string,
 
 } = {
-  gameHeight: 600,
-  gameWidth: 1000,
+  gameHeight: 1200,
+  gameWidth: 2000,
+
+  scaleFactorHeight: 600,
+  scaleFactorWidth: 1000,
 
   borderSize: 2,
 

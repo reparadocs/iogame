@@ -21,7 +21,9 @@ var canvas,			// Canvas DOM element
   borders: Array<Object>,
   socket: Object,
   lastTime: number,
-  frame: number;
+  frame: number,
+  world,
+  wctx: Object;
 
 /**************************************************
 ** GAME INITIALISATION
@@ -30,6 +32,12 @@ function init() {
   // Declare the canvas and rendering context
   canvas = document.getElementById("gameCanvas");
   ctx = canvas.getContext("2d");
+  world = document.createElement('canvas');
+  world.id = "World";
+  world.width = 2000;
+  world.height = 1200;
+  wctx = world.getContext("2d");
+
   background_sound = new Audio("background.mp3");
   background_sound.loop = true;
   background_sound.play()
@@ -37,8 +45,10 @@ function init() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  Globals.widthRatio = window.innerWidth / Constants.gameWidth;
-  Globals.heightRatio = window.innerHeight / Constants.gameHeight;
+  //Globals.widthRatio = window.innerWidth / Constants.gameWidth;
+  //Globals.heightRatio = window.innerHeight / Constants.gameHeight;
+  Globals.widthRatio = 1;
+  Globals.heightRatio = 1;
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
 
@@ -282,8 +292,10 @@ function animate() {
 ** GAME UPDATE
 **************************************************/
 function update() {
-  Globals.widthRatio = window.innerWidth / Constants.gameWidth;
-  Globals.heightRatio = window.innerHeight / Constants.gameHeight;
+  //Globals.widthRatio = window.innerWidth / Constants.scaleFactorWidth;
+  //Globals.heightRatio = window.innerHeight / Constants.scaleFactorHeight;
+  Globals.widthRatio = 1;
+  Globals.heightRatio = 1;
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
   keys.update();
@@ -315,6 +327,7 @@ function update() {
 function draw() {
   // Wipe the canvas clean
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  wctx.clearRect(0, 0, 2000, 1200);
 
   ctx.fillStyle = Constants.color_pink;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -327,23 +340,68 @@ function draw() {
     72 - Constants.borderSize,
   );
   // Draw the local player
-  localPlayer.draw(ctx);
+  localPlayer.draw(wctx);
 
   var i;
   for (i = 0; i < remotePlayers.length; i++) {
-    remotePlayers[i].draw(ctx);
+    remotePlayers[i].draw(wctx);
   };
 
   for (i = 0; i < bullets.length; i++) {
-    bullets[i].draw(ctx);
+    bullets[i].draw(wctx);
   }
 
   for (i = 0; i < resources.length; i++) {
-    resources[i].draw(ctx);
+    resources[i].draw(wctx);
   }
   for (i = 0; i < borders.length; i++) {
-    borders[i].draw(ctx);
+    borders[i].draw(wctx);
   }
+
+  var cropLeft = localPlayer.getX() - canvas.width / 2;
+  var cropTop = localPlayer.getY() - canvas.height / 2;
+  Globals.playerCanvasX = canvas.width / 2;
+  Globals.playerCanvasY = canvas.height / 2;
+
+  if (cropLeft < 0) {
+    cropLeft = 0;
+    Globals.playerCanvasX = localPlayer.getX();
+  }
+  if (cropTop < 0) {
+    cropTop = 0;
+    Globals.playerCanvasY = localPlayer.getY();
+  }
+
+  //width ratio is greater than 1
+  //right now i need cropLeft to SMALLER
+  console.log(Globals.widthRatio)
+  if (Globals.widthRatio <= 1.00) {
+    if (cropLeft > (Constants.gameWidth * Globals.widthRatio - canvas.width)) {
+      cropLeft = (Constants.gameWidth * Globals.widthRatio - canvas.width);
+      Globals.playerCanvasX = 
+      canvas.width - (Constants.gameWidth - localPlayer.getX());
+    }
+  } else {
+    if (cropLeft > (Constants.gameWidth * Globals.widthRatio - canvas.width)) {
+      cropLeft = (Constants.gameWidth * Globals.widthRatio - canvas.width);
+      Globals.playerCanvasX = 
+      canvas.width - (Constants.gameWidth - localPlayer.getX());
+    }
+  }
+  
+
+  if (cropTop > Constants.gameHeight - canvas.height) {
+    cropTop = Constants.gameHeight - canvas.height;
+    Globals.playerCanvasY =
+    canvas.height - (Constants.gameHeight - localPlayer.getY());
+  }
+
+
+  ctx.drawImage(world, cropLeft, cropTop, 
+    canvas.width, canvas.height,
+    0, 0, 
+    canvas.width, canvas.height);
+
 
   ctx.fillStyle = Constants.color_black;
   ctx.font = Constants.font_size_user_stats;
@@ -365,6 +423,10 @@ function draw() {
       30 + (i * 30),
     );
   }
+
+
+
+
 };
 
 /**************************************************
