@@ -4,6 +4,7 @@
 **************************************************/
 var Constants = require('./Constants').Constants;
 var GameObject = require('./GameObject').GameObject;
+var Globals = require('./Globals').Globals;
 
 if (typeof window === 'undefined') {
   var hasAudio = false;
@@ -157,32 +158,32 @@ class Player extends GameObject {
   }
 
   draw(ctx: Object) {
-    const x_pos = this._x;
-    const y_pos = this._y;
+    const x_pos = this._x * Globals.widthRatio;
+    const y_pos = this._y * Globals.heightRatio;
 
     ctx.fillStyle = this._color;
     ctx.beginPath();
-    ctx.arc(x_pos, y_pos, Constants.playerSize, 0, 2*Math.PI);
+    ctx.arc(x_pos, y_pos, Constants.playerSize * Globals.widthRatio, 0, 2*Math.PI);
     ctx.fill();
     ctx.fillStyle = '#000';
     if (this._chargeTime !== 0) {
       ctx.beginPath();
       const charged = Date.now() - this._chargeTime;
       let size =
-      charged * Constants.bulletGrowthRate > Constants.bulletMaxSize
-      ? Constants.bulletMaxSize
-      : charged * Constants.bulletGrowthRate;
+      charged * Constants.bulletGrowthRate * Globals.widthRatio > Constants.bulletMaxSize
+      ? Constants.bulletMaxSize * Globals.widthRatio
+      : charged * Constants.bulletGrowthRate * Globals.widthRatio;
       if (size < 1) {
         size = 1;
       }
-      ctx.arc(x_pos, y_pos, size, 0, 2*Math.PI);
+      ctx.arc(x_pos, y_pos, size * Globals.widthRatio, 0, 2*Math.PI);
       ctx.moveTo(
-        x_pos + (size * this._shootDir[0]),
-        y_pos + (size * this._shootDir[1])
+        x_pos + (size * Globals.widthRatio * this._shootDir[0]),
+        y_pos + (size * Globals.widthRatio * this._shootDir[1])
       );
       ctx.lineTo(
-        x_pos + ((size - 5) * this._shootDir[0]),
-        y_pos + ((size - 5) * this._shootDir[1])
+        x_pos + ((size * Globals.widthRatio - 5) * this._shootDir[0]),
+        y_pos + ((size * Globals.widthRatio - 5) * this._shootDir[1])
       );
       ctx.stroke();
     }
@@ -190,22 +191,22 @@ class Player extends GameObject {
     ctx.font = "18px serif";
     ctx.fillText(
       this._bulletCount,
-      this._x - 5,
-      this._y + 5,
+      this._x * Globals.widthRatio - 5,
+      this._y * Globals.heightRatio + 5,
     );
 
     ctx.fillStyle = "#777777";
     ctx.fillRect(
-      (this._x - this._width) - 3,
-      (this._y - this._height) - 10,
-      35,
-      7);
+      (this._x - this._width) * Globals.widthRatio - 3 * Globals.widthRatio,
+      (this._y - this._height) * Globals.heightRatio - 10  * Globals.heightRatio,
+      35 * Globals.widthRatio,
+      7 * Globals.heightRatio);
     ctx.fillStyle = "#32CD32";
     ctx.fillRect(
-      (this._x - this._width) - 2,
-      (this._y - this._height) - 9,
-      ((this._health / Constants.playerHealth) * 33),
-      5);
+      (this._x - this._width) * Globals.widthRatio - 2 * Globals.widthRatio,
+      (this._y - this._height) * Globals.heightRatio - 9  * Globals.heightRatio,
+      ((this._health / Constants.playerHealth) * 33) * Globals.widthRatio,
+      5 * Globals.heightRatio);
 
   }
 

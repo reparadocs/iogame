@@ -52,8 +52,8 @@ class Keys {
   onMouseMove(e: Object) {
     this._mouseX = e.clientX;
     this._mouseY = e.clientY;
-    const diffX = this._mouseX - Globals.playerCanvasX
-    const diffY = this._mouseY - Globals.playerCanvasY
+    const diffX = this._mouseX - this._localPlayer.getX() * Globals.widthRatio;
+    const diffY = this._mouseY - this._localPlayer.getY() * Globals.heightRatio;
     const length = Math.sqrt(diffX * diffX + diffY * diffY);
     const vector = [diffX / length, diffY / length];
     this._dir = vector;
@@ -72,8 +72,8 @@ class Keys {
   }
 
   isPlayerOnMouse() {
-    return Math.abs(this._mouseX - Globals.playerCanvasX) < Constants.mouseTolerance
-    && Math.abs(this._mouseY - Globals.playerCanvasY) < Constants.mouseTolerance;
+    return Math.abs(this._localPlayer.getX() * Globals.widthRatio - this._mouseX) < Constants.mouseTolerance
+    && Math.abs(this._localPlayer.getY() * Globals.heightRatio - this._mouseY) < Constants.mouseTolerance;
   }
 
   update() {
