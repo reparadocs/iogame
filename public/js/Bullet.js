@@ -3,7 +3,6 @@
 ** GAME Bullet CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
-var Globals = require('./Globals').Globals;
 var GameObject = require('./GameObject').GameObject;
 
 if (typeof window === 'undefined') {
@@ -98,9 +97,9 @@ class Bullet extends GameObject {
     ctx.fillStyle = this._color;
     ctx.beginPath();
     ctx.arc(
-      this._x * Globals.widthRatio,
-      this._y * Globals.heightRatio,
-      this._size * Globals.widthRatio,
+      this._x,
+      this._y,
+      this._size,
       0, 2*Math.PI,
     );
     ctx.fill();

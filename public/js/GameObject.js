@@ -3,7 +3,6 @@
 ** GAME GameObject CLASS
 **************************************************/
 var Constants = require('./Constants').Constants;
-var Globals = require('./Globals').Globals;
 
 class GameObject {
   _x: number;
@@ -73,10 +72,10 @@ class GameObject {
   draw(ctx: Object) {
     ctx.fillStyle = this._color;
     ctx.fillRect(
-      ((this._x - this._width / 2) * Globals.widthRatio),
-      ((this._y - this._height / 2) * Globals.heightRatio),
-      (Globals.widthRatio * this._width * 2),
-      (Globals.heightRatio * this._height * 2),
+      (this._x - this._width / 2),
+      (this._y - this._height / 2),
+      (this._width * 2),
+      (this._height * 2),
     );
   }
 
