@@ -2,17 +2,33 @@
 
 <html lang="en">
 
-	<head>
-		<title>A multiplayer game built using HTML5 canvas and WebSockets</title>
-		<meta charset="utf-8">
+  <head>
+    <title>A multiplayer game built using HTML5 canvas and WebSockets</title>
+    <meta charset="utf-8">
 
-		<link rel="stylesheet" href="style/reset.css">
-		<link rel="stylesheet" href="style/game.css">
-	</head>
+    <link rel="stylesheet" href="style/reset.css">
+    <link rel="stylesheet" href="style/game.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  </head>
 
-	<body>
-		<canvas id="gameCanvas"></canvas>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
-		<script src="bundle.js"></script>
-	</body>
+  <body style="background: #9CBA7F; ">
+    <div style="margin: auto; display: table;">
+    <h2>Welcome to Dodgeball</h2>
+    <h4>Press space to shoot, hold space to charge up shot!</h4>
+    <h4>Move with the mouse</h4>
+    <form action="/game/" method="GET">
+    <div class="container">
+    <h4>Username:</h4>
+    <input type="text" id="name" name="name">
+    </div>
+    <div class="container" style="margin-bottom:20px;">
+    <h4>Color:</h4>
+        <input  value="#9CBA7F" type="color" id="color" name="color">
+
+    </div>
+
+    <button type="submit" id="submit">Join Game</button>
+    </form>
+    </div>
+  </body>
 </html>

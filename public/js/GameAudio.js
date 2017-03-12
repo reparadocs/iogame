@@ -3,9 +3,9 @@ var ResourceAudio = [];
 var ShootAudio = [];
 var DamageAudio = [];
 for (var i = 0; i < 10; i++) {
-  ResourceAudio.push(new Audio("resource.wav"));
-  ShootAudio.push(new Audio("shoot.wav"));
-  DamageAudio.push(new Audio("damage.wav"));
+  ResourceAudio.push(new Audio("/resource.wav"));
+  ShootAudio.push(new Audio("/shoot.wav"));
+  DamageAudio.push(new Audio("/damage.wav"));
 }
 var resourceCounter = 0;
 var damageCounter = 0;

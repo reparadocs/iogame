@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
+var path = require('path');
 //@flow
 var util = require("util");
 var Player = require("../public/js/Player").Player;
@@ -15,7 +16,11 @@ server.listen(process.env.PORT || 3000);
 app.use(express.static(__dirname + '/../public'));
 
 app.get('/', function (req, res) {
-  res.sendFile(__dirname + '../public/index.html');
+  res.sendFile('index.html');
+});
+
+app.get('/game/', function (req, res) {
+  res.sendFile(path.resolve('build/public/game.html'));
 });
 
 var socket: Object,

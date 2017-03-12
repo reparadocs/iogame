@@ -56,17 +56,12 @@ function init() {
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
 
-  color = getUrlParameter('color');
-  if (color != '') {
-    color = '#' + color;
-  }
-  localPlayer = new Player(0, 0, [], color, getUrlParameter('name'), createBullet);
+  localPlayer = new Player(0, 0, [], getUrlParameter('color'), getUrlParameter('name'), createBullet);
   localPlayer.reset();
-
-
+  
   setInputEventHandlers();
 
-   if (location.hostname === "localhost") {
+  if (location.hostname === "localhost") {
     socket = io.connect("http://localhost:3000");
   } else {
     socket = io.connect("https://testiogame.herokuapp.com")
@@ -284,11 +279,11 @@ function animate() {
   for (var i = 0; i < framesToRun; i++) {
     frame += 1;
     update();
-    if (!keys._init) {
-      drawLoading();
-    } else {
+    //if (!keys._init) {
+    //  drawLoading();
+    //} else {
         draw();
-    }
+    //}
   }
   lastTime += framesToRun * (1000 / 60);
   // Request a new animation frame using Paul Irish's shim
