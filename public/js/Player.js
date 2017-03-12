@@ -42,10 +42,18 @@ class Player extends GameObject {
     this._health = Constants.playerHealth;
     this._init_name = false;
     this._name = this._generateName(name);
+    this._color = this._generateColor(color);
   }
 
+  _generateColor(color: string) {
+    if (color != null && color != '') {
+      return color;
+    }
+    return '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+  }
+  
   _generateName(name: string) {
-    if (name != null) {
+    if (name != null && name != '') {
       return name;
     }
     const adjective = Constants.name_prefix_adjectives[
@@ -164,6 +172,25 @@ class Player extends GameObject {
     ctx.beginPath();
     ctx.arc(x_pos, y_pos, Constants.playerSize, 0, 2*Math.PI);
     ctx.fill();
+    ctx.fillStyle = "#fff";
+
+    ctx.beginPath()
+    ctx.moveTo(
+      x_pos + (Constants.playerSize * this._shootDir[0]), 
+      y_pos + (Constants.playerSize * this._shootDir[1])
+    );
+
+    ctx.lineTo(
+      x_pos + ((Constants.playerSize / 2) * this._shootDir[1]),
+      y_pos + ((Constants.playerSize / 2) * -1 * this._shootDir[0])
+    );
+    
+    ctx.lineTo(
+      x_pos - ((Constants.playerSize / 2) * this._shootDir[1]),
+      y_pos - ((Constants.playerSize / 2) * -1 * this._shootDir[0])
+    );
+    ctx.fill();
+
     ctx.fillStyle = '#000';
     if (this._chargeTime !== 0) {
       ctx.beginPath();
@@ -207,6 +234,10 @@ class Player extends GameObject {
       ((this._health / Constants.playerHealth) * 33),
       5);
 
+
+
+
+
   }
 
   serialize() {
@@ -224,7 +255,6 @@ class Player extends GameObject {
     this._alive = true;
     this._health = Constants.playerHealth;
     //this._score = 0;
-    this._color = color ? color : '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
     this._dir = [1,0];
     this._shootDir = this._dir;
   }

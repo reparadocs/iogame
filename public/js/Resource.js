@@ -12,7 +12,7 @@ class Resource extends GameObject {
       startY,
       Constants.resourceSize,
       Constants.resourceSize,
-      '#000',
+      '#006400',
     );
   }
 

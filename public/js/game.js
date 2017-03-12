@@ -28,6 +28,14 @@ var canvas,			// Canvas DOM element
 /**************************************************
 ** GAME INITIALISATION
 **************************************************/
+
+function getUrlParameter(name) {
+  name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+  var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+  var results = regex.exec(location.search);
+  return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+};
+
 function init() {
   // Declare the canvas and rendering context
   canvas = document.getElementById("gameCanvas");
@@ -48,7 +56,11 @@ function init() {
   Globals.canvasWidth = canvas.width;
   Globals.canvasHeight = canvas.height;
 
-  localPlayer = new Player(0, 0, [], '', null, createBullet);
+  color = getUrlParameter('color');
+  if (color != '') {
+    color = '#' + color;
+  }
+  localPlayer = new Player(0, 0, [], color, getUrlParameter('name'), createBullet);
   localPlayer.reset();
 
 
