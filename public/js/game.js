@@ -46,7 +46,7 @@ function init() {
   world.height = Constants.gameHeight;
   wctx = world.getContext("2d");
 
-  background_sound = new Audio("background.mp3");
+  background_sound = new Audio("/background.mp3");
   background_sound.loop = true;
   background_sound.play()
   // Maximise the canvas
