@@ -34,8 +34,8 @@ var Constants: {
   font_size_user_stats: string,
 
 } = {
-  gameHeight: 2400,
-  gameWidth: 4800,
+  gameHeight: 2000,
+  gameWidth: 4000,
 
   borderSize: 2,
 
